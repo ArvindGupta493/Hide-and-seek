@@ -204,6 +204,7 @@ const StartGame = ({ userId }) => {
 
       // Navigate with selected values
       navigate("/game-started", {
+        // testing git
         state: { duration, interval, opponentUsername, userLocation: location },
       });
     } catch (err) {
