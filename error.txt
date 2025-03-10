@@ -1,0 +1,907 @@
+const Promise = require("bluebird");
+const crypto = require('crypto');
+const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
+
+const { SuccessHandler } = require("../../Middlewares/responseHandler");
+const { sendOtpEmail } = require('../../Services/otpService');
+const userService = require("../../Services/userService");
+const UserModel = require('../../Models/UserModel'); 
+const ErrorHandler = require("../../Utils/errorHandler");
+const sendEmail = require('../../Utils/sendEmail'); 
+
+const GameSettings = require("../../Models/GameSettings");
+const  NotificationModel  = require("../../Models/NotificationModel");
+const { sendNotification } = require("../../Services/notificationService");
+const { log } = require("console");
+const BlacklistedToken = require("../../Models/BlacklistedToken.js");
+
+
+class UserController {
+    
+    async registerController(req, res, next) {
+        try {
+            const user = await userService.registerService(req.body);
+            return SuccessHandler(res, user.msg, 201, user.data);
+        } catch (error) {
+            return next(new ErrorHandler("Registration failed.", 500, error));
+        }
+    }
+
+    async loginController(req, res, next) {
+        try {
+            const { email, password } = req.body;
+            const user = await userService.loginService({ email, password });
+
+            if (!user.success) {
+                return res.status(user.status).json({ success: user.success, message: user.msg });
+            }
+
+            const { token } = user.data;
+            if (!token) {
+                throw new Error("Token is missing in response from loginService");
+            }
+            return SuccessHandler(res, user.msg, user.status, user.data);
+        } catch (error) {
+            return next(new ErrorHandler("Login failed.", 500, error));
+        }
+    }
+
+    async logoutController(req, res, next) {
+        try {
+            const token = req.headers.authorization?.split(" ")[1]; 
+            if (!token) {
+                return res.status(401).json({ success: false, message: "No token provided." });
+            }
+            await BlacklistedToken.create({ token });
+            res.status(200).json({ success: true, message: "Logout successful." });
+        } catch (error) {
+            return next(new ErrorHandler("Logout failed.", 500, error));
+        }
+    }
+
+    
+    async getUserProfileController(req, res, next) {
+        try {
+            const user = await userService.getUserProfileService(req.decoded.id);
+            if (user && user.success) {
+                return SuccessHandler(res, user.msg, user.status, user.data);
+            } else {
+                return next(new ErrorHandler(user.msg, user.status, user.data));
+            }
+        } catch (error) {
+            return next(new ErrorHandler("Error fetching profile.", 500, error));
+        }
+    }
+
+
+        async generateOtpController(req, res) {
+            try {
+                const { email } = req.body;
+                const user = await UserModel.findOne({ email });
+        
+                if (!user) {
+                    return res.status(404).json({ success: false, message: 'User not found.' });
+                }
+        
+                const otp = crypto.randomInt(1000, 9999).toString();
+                const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+                const otpExpires = new Date(Date.now() + 10000 * 60 * 1000); // 10000 minutes expiry
+        
+                // Update the existing user with OTP and expiry
+                user.otp = hashedOtp;
+                user.otpExpires = otpExpires;
+                await user.save();
+        
+                await sendEmail(user.email, 'Your OTP Code', `Your OTP is: ${otp}`);
+                console.log(`OTP sent to ${email}: ${otp}`); // For debugging only. Remove in production.
+        
+                res.status(200).json({ success: true, message: 'OTP sent successfully.' });
+            } catch (error) {
+                console.error('Error generating OTP:', error);
+                res.status(500).json({ success: false, message: 'Error generating OTP.' });
+            }
+        }
+
+        
+        async verifyOtpController(req, res, next) {
+            try {
+                const { email, otp } = req.body;
+                console.log("Verifying OTP for email:", email); // Debugging line
+        
+                const user = await UserModel.findOne({ email: email.toLowerCase() }).select("+otp +otpExpires");
+                console.log("User found:", user); // Debugging line
+                if (!user) {
+                    return res.status(404).json({ success: false, message: 'User not found.' });
+                }
+        
+                const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+                if (user.otp !== hashedOtp || user.otpExpires < new Date()) {
+                    return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
+                }
+
+                await user.save();
+                res.status(200).json({ success: true, message: 'OTP verified successfully.' });
+            } catch (error) {
+                console.error("Error verifying OTP:", error);  // Debugging line
+                return next(new ErrorHandler("Error verifying OTP.", 500, error));
+            }
+        }
+
+        async updatePasswordController(req, res) {
+            try {
+                const { email, otp, newPassword, confirmPassword } = req.body;
+        
+                // Validate input fields
+                if (!email || !otp || !newPassword || !confirmPassword) {
+                    return res.status(400).json({ message: "All fields are required." });
+                }
+                if (newPassword !== confirmPassword) {
+                    return res.status(400).json({ message: "Passwords do not match." });
+                }
+                // Check if the user exists
+                const user = await UserModel.findOne({ email }).select("+otp +otpExpires");
+                if (!user) {
+                    return res.status(404).json({ message: "User not found." });
+                }
+                // Validate OTP
+                const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+                console.log("Hashed OTP (Input):", hashedOtp);
+                console.log("Stored OTP in DB:", user.otp);
+                console.log("OTP Expiry:", user.otpExpires);
+                console.log("Current Time:", new Date());
+                
+                if (user.otp !== hashedOtp || user.otpExpires < new Date()) {
+                    return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
+                }
+                // Hash new password
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+                // Update password and clear OTP
+                user.password = hashedPassword;
+                user.otp = undefined;
+                user.otpExpires = undefined;
+                await user.save();
+    
+                return res.status(200).json({ message: "Password updated successfully." });
+            } catch (error) {
+                console.error("Error updating password:", error);
+                return res.status(500).json({ message: "Internal server error." });
+            }
+        }
+
+
+// =================================================== GAME ======================================================= //
+       
+async getUserListController(req, res) {
+    try {
+        const userId = req.decoded.id;
+        const { range } = req.query;  
+        const parsedRange = parseInt(range, 10) || 5;
+
+        console.log("Request received at /get-users-in-range with user ID:", userId);
+        console.log("Parsed range:", parsedRange);
+
+        const currentUser = await UserModel.findById(userId);
+        if (!currentUser || !currentUser.location || !currentUser.location.coordinates) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "User location not found or invalid.", 
+                players: [] 
+            });
+        }
+
+        const nearbyUsers = await UserModel.find({
+            _id: { $ne: userId },
+            location: {
+                $near: {
+                    $geometry: { type: "Point", coordinates: currentUser.location.coordinates },
+                    $maxDistance: parsedRange * 1000, 
+                },
+            },
+        }).select("_id username location"); // Only return necessary fields
+
+        if (!nearbyUsers.length) {
+            return res.status(200).json({ 
+                success: true, 
+                message: "No players found in range.", 
+                players: [] 
+            });
+        }
+
+        res.setHeader("Content-Type", "application/json");
+        return res.status(200).json({ success: true, players: nearbyUsers });
+
+    } catch (error) {
+        console.error("Server error:", error);
+
+        res.setHeader("Content-Type", "application/json");
+        return res.status(500).json({ 
+            success: false, 
+            message: "Internal server error.", 
+            error: error.message, 
+            players: [] 
+        });
+    }
+}
+
+// Select a player and save in the database
+async selectPlayerController(req, res) {
+    try {
+        const { opponentId, opponentUsername, duration, interval } = req.body;
+        const userId = req.decoded.id;
+
+        if (!opponentId && !opponentUsername) {
+            return res.status(400).json({ success: false, message: "Opponent ID or Username is required." });
+        }
+
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // Find opponent by ID or username
+        let opponent;
+        if (opponentId) {
+            opponent = await UserModel.findById(opponentId);
+        } else if (opponentUsername) {
+            opponent = await UserModel.findOne({ username: opponentUsername });
+        }
+
+        if (!opponent) {
+            return res.status(404).json({ success: false, message: "Opponent not found." });
+        }
+
+        user.opponentId = opponent._id;
+        opponent.opponentId = userId;
+
+        // Save game settings
+        user.gameSettings = { duration, interval };
+        opponent.gameSettings = { duration, interval };
+
+        await user.save();
+        await opponent.save();
+
+        res.status(200).json({ 
+            success: true, 
+            message: "Opponent selected and game settings saved successfully.", 
+            selectedOpponent: { id: opponent._id, username: opponent.username },
+            gameSettings: { duration, interval }
+        });
+
+    } catch (error) {
+        console.error("Error selecting opponent:", error);
+        res.status(500).json({ success: false, message: "Server error." });
+    }
+}
+
+
+
+// Save game settings with userId and opponentId
+async saveGameSettingsController(req, res) {
+    try {
+        const userId = req.decoded.id;
+        const { duration, interval, radius
+            // , opponentId 
+        } = req.body;
+
+        if (!duration || !interval || !radius 
+            // || !opponentId
+        ) {
+            return res.status(400).json({ success: false, message: "All fields are required, including opponentId" });
+        }
+        if (interval < 1 || interval > 5) {
+            return res.status(400).json({ success: false, message: "Interval must be between 1 and 5 minutes" });
+        }
+        const parsedRadius = parseInt(radius, 10);
+        if (![1, 2, 3, 4, 5].includes(parsedRadius)) {
+            return res.status(400).json({ success: false, message: "Radius must be between 1km and 5km" });
+        }
+        let gameSettings = await GameSettings.findOne({ userId });
+
+        if (gameSettings) {
+            // Update existing game settings
+            gameSettings.duration = duration;
+            gameSettings.interval = interval;
+            gameSettings.radius = parsedRadius;
+            // gameSettings.players = [userId, opponentId];
+        } else {
+            // Create new game settings
+            gameSettings = new GameSettings({
+                userId,
+                duration,
+                interval,
+                radius: parsedRadius,
+                // players: [userId, opponentId]
+            });
+        }
+        await gameSettings.save();
+        res.status(200).json({ success: true, settings: gameSettings });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+
+async savedGameSettingsController(req, res) {
+    try {
+        const userId = req.decoded.id;
+        const gameSettings = await GameSettings.findOne({ userId });
+        if (!gameSettings) {
+            return res.status(404).json({ success: false, message: "Game settings not found." });
+        }
+        res.status(200).json({ success: true, settings: gameSettings });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+
+
+// choiceController: First player selects "hide" or "seek"
+
+async choiceController(req, res) {
+    try {
+        const { choice } = req.body;
+        const userId = req.decoded.id;
+
+        // Find the user
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+        user.role = choice;
+
+        // Find the opponent
+        const opponent = await UserModel.findOne({ _id: user.opponentId }); // Ensure opponentId exists
+        if (!opponent) {
+            return res.status(404).json({ message: "Opponent not found." });
+        }
+
+        opponent.role = choice === "seek" ? "hide" : "seek";   // Assign the opposite role to the opponent
+
+        // Save both users
+        await user.save();
+        await opponent.save();
+
+        res.status(200).json({ message: "Roles assigned successfully.", userRole: user.role, opponentRole: opponent.role });
+    } catch (error) {
+        console.error("Error assigning roles:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+};
+
+// requestAcceptionController: Accept or decline a game request
+
+async requestAcceptionController(req, res) {
+    try {
+        const { decision } = req.body; // 'accept' or 'decline'
+        const userId = req.decoded.id;
+
+        const user = await UserModel.findById(userId);
+        if (!user || !user.opponentId) {
+            return res.status(400).json({ message: 'No opponent request found.' });
+        }
+
+        const opponentId = user.opponentId;
+        const opponent = await UserModel.findById(opponentId);
+        if (!opponent) {
+            return res.status(400).json({ message: 'Opponent not found.' });
+        }
+        if (decision === 'accept') {
+            user.gameStatus = 'pending-start'; // Game is now waiting for roles
+            opponent.gameStatus = 'pending-start';
+    
+            await user.save();
+            await opponent.save();
+
+            // Notify the original requester
+            await sendNotification(opponentId, userId, "game-request", "Your game request has been accepted!");
+
+            return res.status(200).json({ success: true, message: "Game request accepted!" });
+        } else if (decision === 'decline') {
+            // Reset opponent selection
+            user.selectedOpponent = null;
+            opponent.selectedOpponent = null;
+
+            await user.save();
+            await opponent.save();
+
+            // Notify the original requester
+            await sendNotification(opponentId, userId, "game-request", "Your game request has been declined.");
+
+            return res.status(200).json({ success: true, message: "Game request declined." });
+        } else {
+            return res.status(400).json({ message: 'Invalid decision. Must be "accept" or "decline".' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error.' });
+    }
+}
+
+// startGameNowController: Starts the game once both players have confirmed.
+
+async startGameNowController(req, res) {
+    try {
+        const userId = req.decoded.id;
+
+        //  Fetch the user and their opponent FIRST
+        const user = await UserModel.findById(userId);
+        if (!user || !user.opponentId) {
+            return res.status(400).json({ message: "No opponent selected. Please select an opponent first." });
+        }
+        const opponent = await UserModel.findById(user.opponentId);
+        if (!opponent) {
+            return res.status(400).json({ message: "Selected opponent not found." });
+        }
+
+        let gameSettings = await GameSettings.findOne({ userId });
+        if (!gameSettings) {
+            if (!user.role || !opponent.role) {
+                return res.status(400).json({ message: "Both players must select hide or seek before starting." });
+            }
+            if (user.role === opponent.role) {
+                return res.status(400).json({ message: "Players must choose different roles (one hides, one seeks)." });
+            }
+            if (user.gameStatus === 'in-game' || opponent.gameStatus === 'in-game') {
+                return res.status(400).json({ message: "Game is already in progress." });
+            }
+
+            //  Create new game settings
+            gameSettings = new GameSettings({
+                players: [userId, opponent._id],
+                radius: req.body.range,
+                duration: req.body.duration,
+                interval: req.body.interval,
+                status: 'in-progress',
+                startTime: Date.now(),
+                endTime: Date.now() + req.body.duration * 60000,
+                userId,
+            });
+        } else {        // Update existing game settings
+            gameSettings.status = 'in-progress';
+            gameSettings.startTime = Date.now();
+            gameSettings.endTime = Date.now() + gameSettings.duration * 60000;
+        }
+
+        await gameSettings.save();
+
+        // Corrected: Update game status for both players
+        user.gameStatus = 'in-game';
+        opponent.gameStatus = 'in-game';
+        await user.save();
+        await opponent.save();
+
+        // Send notifications
+        await sendNotification(userId, opponent._id, "game-status", "The game has started!");
+        await sendNotification(opponent._id, userId, "game-status", "The game has started!");
+
+        return res.status(200).json({ success: true, message: "Game started!", gameId: gameSettings._id });
+
+    } catch (error) {
+        console.error("Error starting game:", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+}
+
+
+// ================================================== Notifiacation  ====================================================== //
+
+
+async NotificationController(req, res) {
+    try {
+        const userId = req.decoded.id;
+        // Fetch all notifications related to this user
+        const notifications = await NotificationModel.find({ receiverId: userId }).sort({ createdAt: -1 });
+
+        return res.status(200).json({ success: true, notifications });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error while fetching notifications.' });
+    }
+}
+
+// ==================================================== Location  ====================================================== //
+
+async updateLocationController(req, res) {
+    try {
+        const { lat, lng } = req.body;
+        const userId = req.decoded.id;
+
+        if (!lat || !lng) {
+            return res.status(400).json({ success: false, message: "Invalid location data." });
+        }
+
+        await UserModel.findByIdAndUpdate(userId, {
+            location: { type: "Point", coordinates: [lng, lat] },
+            lastUpdated: new Date()
+        });
+
+        res.json({ success: true, message: "Location updated successfully." });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error updating location.", error });
+    }
+}
+
+async getUserLocationController(req, res) {
+    try {
+        const userId = req.decoded.id;
+        const game = await GameSettings.findOne({
+            players: new mongoose.Types.ObjectId(userId),
+            status: "in-progress"
+        }).populate("players", "location lastUpdated");
+
+        if (!game) {
+            return res.status(404).json({ success: false, message: "No active game found." });
+        }
+
+        const opponent = game.players.find(player => player._id.toString() !== userId);
+        if (!opponent || !opponent.location) {
+            return res.status(404).json({ success: false, message: "Opponent location not available." });
+        }
+
+        return res.json({ success: true, location: opponent.location, lastUpdated: opponent.lastUpdated });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Error fetching opponent's location.", error });
+    }
+}
+
+async updateWinLossController(req, res) {
+    try {
+        const { result } = req.body;
+        const userId = req.decoded.id;
+
+        if (!['win', 'loss'].includes(result)) {
+            return res.status(400).json({ success: false, message: "Invalid result. Must be 'win' or 'loss'." });
+        }
+
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        let game = await GameSettings.findOne({
+            players: userId,
+            status: "in-progress"
+        });
+
+        if (!game) {
+            return res.status(404).json({ success: false, message: "No active game found." });
+        }
+
+        if (result === 'win') {
+            user.gamesWon = (user.gamesWon || 0) + 1;
+        } else {
+            user.gamesLost = (user.gamesLost || 0) + 1;
+        }
+        user.gamesPlayed = (user.gamesPlayed || 0) + 1;
+        await user.save();
+
+        game.status = "completed";  
+        game.endTime = new Date();
+        await game.save();
+
+        return res.status(200).json({
+            success: true,
+            message: `Game result updated: ${result}.`,
+            stats: {
+                gamesPlayed: user.gamesPlayed,
+                gamesWon: user.gamesWon,
+                gamesLost: user.gamesLost,
+                gameStatus: game.status
+            }
+        });
+
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Error updating game result." });
+    }
+}
+
+async getGameHistoryController(req, res) {
+    try {
+        const userId = req.decoded.id;
+        const gameHistory = await GameSettings.find({
+            players: userId,
+            status: { $in: ["completed", "ended"] }
+        });
+
+        return res.status(200).json({ success: true, gameHistory });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Error fetching game history." });
+    }
+}
+}
+
+module.exports = new UserController();
+
+// check why the winner is not being set when the game is completed and new games are not being played ands their gamehistroy is not being recorded and why the get user location is not working 
+
+
+
+
+
+
+
+
+
+
+Duplicate Key Error (E11000)	userId is set as unique in GameSettings schema	Remove unique: true from userId in the schema
+Game history shows incorrect result	Comparing ObjectId with string	Convert both to .toString() before comparison
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+This error occurs because your `gamesettings` collection has a unique index on `userId`, meaning each user can only have one entry. If you're trying to insert a new entry for a user who already has one, MongoDB throws a duplicate key error.
+
+### Possible Fixes:
+
+#### 1. **Update Instead of Insert**
+If you want to allow users to update their game settings instead of creating new ones each time, modify your query to use `updateOne()` with `upsert: true`:
+
+```javascript
+await GameSettings.updateOne(
+  { userId }, // Find by userId
+  { $set: { duration, interval } }, // Update values
+  { upsert: true } // Create a new entry if none exists
+);
+```
+This ensures:
+- If `userId` exists, it updates the existing document.
+- If `userId` does not exist, it creates a new document.
+
+#### 2. **Check Before Inserting**
+If you only want to insert when no existing document is found:
+
+```javascript
+const existingSettings = await GameSettings.findOne({ userId });
+if (!existingSettings) {
+  await GameSettings.insertOne({ userId, duration, interval });
+} else {
+  console.log("Settings already exist for this user.");
+}
+```
+
+#### 3. **Remove Unique Constraint (If Not Needed)**
+If you don't want `userId` to be unique (allow multiple settings per user):
+
+```bash
+db.gamesettings.dropIndex("userId_1")
+```
+*⚠️ Be cautious, as this will allow multiple settings per user.*
+
+Which approach fits your use case?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{
+    "success": true,
+    "settings": {
+        "_id": "67c193c09adb5de6a54497ce",
+        "userId": "67a59df4b64735a10cb882c9",
+        "players": [
+            "67a59df4b64735a10cb882c9",
+            "67a46e07313be6a285cc80de"
+        ],
+        "duration": 18,
+        "interval": 2,
+        "radius": 1,
+        "status": "waiting",
+        "startTime": null,
+        "endTime": null,
+        "__v": 0
+    }
+}
+
+{
+    "success": true,
+    "settings": {
+        "_id": "67c193c09adb5de6a54497ce",
+        "userId": "67a59df4b64735a10cb882c9",
+        "players": [
+            "67a59df4b64735a10cb882c9",
+            "67a46e07313be6a285cc80de"
+        ],
+        "duration": 18,
+        "interval": 2,
+        "radius": 1,
+        "status": "completed",
+        "startTime": "2025-02-28T10:45:51.993Z",
+        "endTime": "2025-02-28T10:46:03.621Z",
+        "__v": 0
+    }
+}  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async startGame(req, res) {
+    try {
+        const { userId, opponentId, duration, interval, radius } = req.body;
+
+        // Check if either player is already in an unfinished game
+        const activeGame = await GameSettings.findOne({
+            players: { $in: [userId, opponentId] },
+            status: { $ne: "completed" },
+        });
+
+        if (activeGame) {
+            return res.status(400).json({ message: "Finish your current game before starting a new one" });
+        }
+
+        // Create a new game
+        const newGame = new GameSettings({
+            userId,
+            players: [userId, opponentId],
+            duration,
+            interval,
+            radius,
+            status: "in-progress",
+            startTime: new Date(),
+        });
+
+        await newGame.save();
+
+        // Mark users as in-game
+        await User.updateMany(
+            { _id: { $in: [userId, opponentId] } },
+            { $set: { isInGame: true } }
+        );
+
+        return res.status(201).json({ message: "Game started successfully", game: newGame });
+
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).json({ message: "A game with this user already exists!" });
+        }
+        console.error("Error starting game:", error);
+        return res.status(500).json({ message: "Server error" });
+    }
+}
+

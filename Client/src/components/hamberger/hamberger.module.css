@@ -1,0 +1,222 @@
+/* ======== Hamburger Menu Container ======== */
+.home {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* ======== Hamburger Icon ======== */
+.menuIcon {
+  font-size: 34px;
+  cursor: pointer;
+  padding: 10px;
+  user-select: none;
+  color: rgb(0, 0, 0);
+  transition: transform 0.3s ease-in-out;
+}
+
+.menuIcon:hover {
+  transform: scale(1.1);
+} 
+
+
+
+/* ======== Dropdown Menu ======== */
+.menuDropdown {
+  position: absolute;
+  top: 50px;  
+  left: 0;
+  background: rgba(255, 253, 253, 0.9);
+  width: 300px;
+  height: 131vh;  
+  border-radius: 0 10px 10px 0; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  animation: fadeIn 0.3s ease-in-out;
+  padding-top: 50px;
+  /* overflow-y: auto; */
+}
+
+
+/* ======== Menu List ======== */
+.menuDropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menuDropdown li {
+  padding: 12px 15px;
+  color: rgb(0, 0, 0);
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+  text-align: left;
+  margin-left: 10px;
+}
+
+.menuDropdown li:hover {
+  background: #c5c4c5;
+  border-radius: 5px;
+}
+
+
+/* ======== Responsive Design ======== */
+@media (max-width: 768px) {
+  .menuDropdown {
+    width: 180px;
+  }
+
+  .menuDropdown li {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .menuIcon {
+    font-size: 26px;
+  }
+}
+
+
+/* ====== Terms and Condition Confirmation Popup ========= */
+
+.termsPopup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fadeIn 0.3s ease-in-out;
+  overflow-y: auto;
+}
+
+.termsBox {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 50%;
+}
+
+.termsBox p {
+  font-size: 18px;
+  color: black;
+  margin-bottom: 15px;
+}
+
+
+/* ====== Privacy Policy button  ========= */
+
+
+/* .buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+} */
+
+/* Yes & No Buttons */
+.xButton {
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+  margin-left: 500px;
+}
+
+.xButton {
+  background: rgb(255, 255, 255);
+  box-shadow: 1px 0.5px rgba(0, 0, 0, 0.2);
+}
+
+
+
+
+
+/* ======== Logout Confirmation Popup ======== */
+.logoutPopup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.logoutBox {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 300px;
+}
+
+.logoutBox p {
+  font-size: 18px;
+  color: black;
+  margin-bottom: 15px;
+}
+
+/* Button Group */
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* Yes & No Buttons */
+.yesButton, .noButton {
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+.yesButton {
+  background: rgb(56, 126, 158);
+  color: white;
+}
+
+.yesButton:hover {
+  background: #d8117d;
+}
+
+.noButton {
+  background: #ccc;
+  color: black;
+}
+
+.noButton:hover {
+  background: #bbb;
+}
+
+/* ======== Animation ======== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+

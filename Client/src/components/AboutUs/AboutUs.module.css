@@ -1,0 +1,98 @@
+
+.aboutContainer {
+    /* max-width: 800px; */
+    /* margin: 50px auto; */
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
+    text-align: left;
+  }
+  
+  .aboutContainer h1 {
+    font-size: 28px;
+    color: #333;
+    text-align: center;
+  }
+  
+  .aboutContainer h2 {
+    font-size: 24px;
+    color: #444;
+    margin-top: 20px;
+  }
+  
+  .aboutContainer p {
+    font-size: 20px;
+    color: #666;
+    line-height: 1.5;
+  }
+  
+  /* ===== Back Button ===== */
+  .backButton {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    transition: background 0.3s ease-in-out;
+    margin-left: 0px;
+  }
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+/* 
+  .aboutContainer {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  h1, h2 {
+    color: #333;
+  }
+  
+  p {
+    font-size: 16px;
+    color: #555;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  li {
+    font-size: 16px;
+    margin: 10px 0;
+  }
+  
+  .backButton {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .backButton:hover {
+    background-color: #0056b3;
+  }
+  
+   */

@@ -1,0 +1,76 @@
+.countdownContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between; /* Space between logo and counter */
+  height: 92vh; 
+  background: linear-gradient(to bottom, #0c0c87, #5c0089);
+  color: white;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  position: relative;
+  padding: 20px 0;
+}
+
+/* Semi-Circle Logo Container */
+.logoContainer {
+  background-color: white;
+  width: 300px;
+  height: 125px; /* Half the width to create a semi-circle */
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 250px;
+  border-bottom-right-radius: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0; /* Stick to the top */
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
+  padding: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.logo img {
+  width: 150px; 
+  height: auto;
+}
+
+.subHeading {
+  font-size: 28px;
+  margin-top: 160px; /* Push content below the semi-circle */
+  margin-bottom: 10px;
+  margin-top: 220px;
+}
+
+.mainHeading {
+  font-size: 58px;
+      font-weight: bold;
+  margin-bottom: 20px;
+  /* text-shadow: 2px 2px 10px rgba(255, 0, 128, 0.8); */
+  /* background: linear-gradient(to bottom, #0c0c87, #5c0089); */
+
+}
+
+.count {
+  font-size: 120px;
+  font-weight: bold;
+  color: #ff0080;
+  text-shadow: 2px 2px 10px rgba(255, 0, 128, 0.8);
+  animation: pop 0.5s ease-in-out;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* why the countercontainer is covering the whole screen */

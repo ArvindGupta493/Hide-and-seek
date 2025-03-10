@@ -1,0 +1,151 @@
+.registerContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 90vh;
+    background-color: #fff;
+    padding: 20px;
+    position: relative;
+}
+
+/* Back Button */
+.backButton {
+    position: absolute;
+    top: 20px;
+    left: 0;
+}
+
+.backButton a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 40px;
+    /* background: linear-gradient(90deg, #ff69b4, #ff1493); */
+    border-radius: 0 25px 25px 0; /* Rounded on right side */
+    box-shadow: 0 4px 10px rgba(255, 20, 147, 0.3);
+    text-decoration: none;
+    padding-left: 10px;
+}
+
+.backButton i {
+    font-size: 30px;
+    color: #c93f88;
+}
+
+/* Logo */
+.logoContainer {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    /* margin-top: -100px; */
+}
+
+.logoContainer img {
+    width: 180px;
+    margin-bottom: 10px;
+}
+
+/* Heading (Sign Up) */
+.heading {
+    font-size: 28px;
+    font-weight: bold;
+    color: #6a0dad;
+    margin-bottom: 20px;
+    font-family: 'Poppins', sans-serif;
+    width: 80%;
+    max-width: 400px;
+    text-align: left; /* Align text to the left */
+}
+
+/* Form Styling */
+.registerForm {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    max-width: 400px;
+}
+
+/* Input Fields */
+.registerForm input {
+    width: 100%;
+    padding: 14px;
+    margin: 8px 0;
+    border: none;
+    border-bottom: 2px solid #6a0dad; /* Only bottom border */
+    font-size: 16px;
+    text-align: left;
+    color: #6a0dad;
+    outline: none;
+    background: transparent;
+    transition: border-color 0.3s ease-in-out;
+}
+
+.registerForm input::placeholder {
+    color: #6a0dad;
+    opacity: 0.8;
+}
+
+.registerForm input:focus {
+    border-bottom: 2px solid #ff1493;
+}
+/* Password Field Container */
+.passwordContainer {
+    position: relative;
+    width: 94%; /* Ensure full width */
+}
+
+/* Password Input */
+.passwordContainer input {
+    width: 100%; /* Make it the same width as other inputs */
+    padding: 14px;
+    margin: 8px 0;
+    border: none;
+    border-bottom: 2px solid #6a0dad;
+    font-size: 16px;
+    text-align: left;
+    color: #6a0dad;
+    outline: none;
+    background: transparent;
+    transition: border-color 0.3s ease-in-out;
+    padding-right: 40px; /* Space for eye icon */
+}
+
+/* Eye Icon for Password Visibility */
+.eyeIcon {
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    cursor: pointer;
+    color: #6a0dad;
+}
+
+/* When input is focused */
+/* .passwordContainer input:focus {
+    border-bottom: 2px solid #ff1493;
+} */
+
+/* Sign Up Button */
+.signUpButton {
+    /* width: 430px; */
+    width: 100%;
+    background: linear-gradient(90deg, #ff007f, #d400d4);
+    color: white;
+    padding: 14px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 45px;
+    cursor: pointer;
+    margin-top: 15px;
+    box-shadow: 0 6px 12px rgba(255, 0, 127, 0.5);
+    transition: all 0.3s ease-in-out;
+}
+
+.signUpButton:hover {
+    background: linear-gradient(90deg, #d400d4, #ff007f);
+    box-shadow: 0 8px 15px rgba(255, 0, 127, 0.6);
+}

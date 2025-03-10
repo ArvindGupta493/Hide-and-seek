@@ -1,0 +1,109 @@
+.contactContainer {
+    max-width: 80%;
+    margin: auto;
+    /* padding: 20px; */
+    text-align: center;
+  }
+
+  .logoContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: -10px;
+  }
+  
+  .logo {
+    width: 200px;
+    height: auto;
+    background-color: white;
+    border-radius: 10px;
+    padding: 5px;
+  }
+  
+  h1 {
+    color: #333;
+  }
+  
+  .inputGroup {
+    margin: 15px 0;
+    text-align: left;
+  }
+  
+  label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  input, textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  textarea {
+    resize: none;
+    height: 100px;
+  }
+  
+  .error {
+    color: red;
+    font-size: 14px;
+  }
+  
+  .submitButton, .backButton {
+    margin-top: 15px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .submitButton {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .submitButton:hover {
+    background-color: #0056b3;
+  }
+  
+  .backButton {
+    background-color: #ccc;
+  }
+  
+  .backButton:hover {
+    background-color: #aaa;
+  }
+
+  
+  .popupOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .popupBox {
+    background: rgb(255, 253, 253);
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .popupBox button {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  

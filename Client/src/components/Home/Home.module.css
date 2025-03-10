@@ -1,0 +1,138 @@
+.home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 90vh;
+    background: linear-gradient(to bottom, white 50%, #27005D 50%);
+    text-align: center;
+  }
+  
+  .logoContainer {
+    margin-bottom: 200px;
+  }
+  
+  .logo {
+    width: 200px;
+  }
+  
+  .content {
+    padding: 20px;
+    color: white;
+  }
+  
+  .welcomeText {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .subText {
+    font-size: 14px;
+    margin-bottom: 30px;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .startButton {
+    background-color: #FF0080;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    padding: 15px 60px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .startButton:hover {
+    background-color: #D6006E;
+    transform: scale(1.05);
+  }
+  
+  .startButton:active {
+    transform: scale(0.98);
+  }
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 
+
+
+  .home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 95vh;
+    background: linear-gradient(to bottom, white 50%, #27005D 50%);
+    text-align: center;
+  }
+  
+  .logoContainer {
+    margin-bottom: 40px;
+  }
+  
+  .logo {
+    width: 300px;
+  }
+  
+  .content {
+    padding: 40px;
+    border-radius: 20px;
+    width: 50%;
+    max-width: 400px;
+    text-align: center;
+    color: white;
+    margin-bottom: -100px;
+  }
+  
+  .welcomeText {
+    font-size: 54px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .subText {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .startButton {
+    background-color: #FF0080;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .startButton:hover {
+    background-color: #D6006E;
+  }
+  
+
+ */

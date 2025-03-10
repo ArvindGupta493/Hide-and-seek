@@ -1,0 +1,571 @@
+.wrapper{
+  background-color: rgb(255, 255, 255);
+  width: 100vw;
+  max-width: 100%;
+  min-height: 100vh;
+}
+
+/* ======== Container & Layout ======== */
+.container {
+  text-align: center;
+  background: linear-gradient(180deg, #020024, #090979, #9400d3);
+  color: white;
+  padding: 40px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  width: 200px;
+  height: auto;
+  background-color: white;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+/* ======= lineContainer  ======== */
+
+.lineContainer{
+  /* display: flex; */
+  justify-content: center;
+  align-items: center;
+  /* margin-bottom: 20px; */
+  width: 100%;
+}
+.line{
+  width: 50%;
+  /* height: 50%; */
+}
+.sideUpper{
+  width: 50%;
+  /* height: 150%; */
+}
+
+.lineContainers{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* margin-bottom: 20px; */
+  width: 100%;
+}
+.sideLower{
+  width: 50%;
+  height: auto;
+}
+.lines{
+  width: 50%;
+  height: 50%;
+  /* margin-bottom: 172px; */
+  margin-bottom: 16.78%;
+}
+
+h3{
+  font-size: 34px;
+}
+
+/* ======== Input Section ======== */
+.section {
+  margin: 20px 0;
+  /* width: 100%; */
+  /* max-width: 400px;2 */
+}
+
+.inputField {
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  border-radius: 25px;
+  border: none;
+  text-align: center;
+  outline: none;
+  margin-bottom: 10px;
+}
+
+/* ======== Player List ======== */
+
+.dropdownContainer {
+  position: relative;
+  width: 120%;
+  max-width: 300px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1px;
+  border-radius: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 30px;
+  color: #ff1493; /* Pink color */
+  background-color: #f116c2;
+}
+
+.dropdown {
+  width: 100%;
+  padding: 10px 38px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 2px solid #000000;
+  color: #000000;
+  background: white;
+  appearance: none;
+  cursor: pointer;
+}
+
+
+
+
+.playerList {
+  list-style: none;
+  padding: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 15px;
+  margin: 5px 0;
+}
+
+.playerItem {
+  padding: 12px;
+  background: white;
+  color: black;
+  margin: 5px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.playerItem:hover {
+  background: #ddd;
+}
+
+.playerItem.selected {
+  background: hotpink !important;
+  color: white;
+  font-weight: bold;
+}
+
+/* ======== Button Groups ======== */
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.buttonGroups {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  flex-wrap: wrap;
+}
+
+/* ---- Range Buttons ---- */
+.rangeButton {
+  background: white;
+  color: #f116c2;
+  font-weight: bolder;
+  padding: 12px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  border: none;
+  font-size: 18px;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.rangeButton:hover {
+  background: hotpink;
+  transform: scale(1.05);
+}
+
+.rangeButton.active {
+  background: hotpink;
+  color: white;
+  font-weight: bold;
+}
+
+/* ---- Interval Buttons ---- */
+.intervalButton {
+  background: white;
+  color: #f116c2;
+  padding: 10px 25px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.intervalButton:hover {
+  background: hotpink;
+  transform: scale(1.05);
+}
+
+.intervalButton.active {
+  background: #ff1493;
+  color: white;
+  font-weight: bold;
+}
+
+/* ---- Duration Control ---- */
+.durationContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.duration-button {
+  /* background: white; */
+  color: black;
+  padding: 8px 15px;
+  border-radius: 10%;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.duration-button:hover {
+  /* background: #ddd; */
+  transform: scale(1.1);
+}
+
+.durationValue {
+  font-size: 28px;
+  background-color: #ffffff;
+  border-radius: 10%;
+  padding: 20px;
+  margin: 20px 20px;
+  color: #f116c2;
+  /* color: hotpink; */
+}
+
+.rightlogo {
+  align-items: center;
+  justify-content: center;
+  /* margin-left: 42%; */
+  width: 50px;
+  height: auto;
+  /* background-color: #090979; */ 
+}
+
+
+/* ======== Error Message ======== */
+.error {
+  color: red;
+  margin: 10px 0;
+  font-weight: bold;
+}
+
+/* ======== Next Button ======== */
+.nextButton {
+  background: #f116c2;
+  /* color: white; */
+  padding: 15px 30px;
+  font-size: 20px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 20px;
+  width: 200px;
+}
+
+.nextButton:hover {
+  background: #ff69b4;
+  transform: translateY(-3px);
+}
+
+/* ======== Responsive Design ======== */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .range-button,
+  .interval-button {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+
+  .nextButton {
+    width: 150px;
+    padding: 12px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 
+
+.wrapper {
+  background-color: rgb(255, 255, 255);
+  width: 100vw;
+  max-width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  text-align: center;
+  background: linear-gradient(180deg, #020024, #090979, #9400d3);
+  color: white;
+  padding: 40px 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.logoContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  width: 180px;
+  height: auto;
+  background-color: white;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.section {
+  margin: 20px 0;
+  width: 100%;
+  max-width: 400px;
+}
+
+.inputField {
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  border-radius: 25px;
+  border: none;
+  text-align: center;
+  outline: none;
+  margin-bottom: 10px;
+  background: white;
+  color: black;
+  font-weight: bold;
+}
+
+.playerList {
+  list-style: none;
+  padding: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 15px;
+  margin: 5px 0;
+}
+
+.playerItem {
+  padding: 12px;
+  background: white;
+  color: black;
+  margin: 5px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+  text-align: center;
+}
+
+.playerItem:hover {
+  background: #ddd;
+}
+
+.playerItem.selected {
+  background: hotpink;
+  color: white;
+  font-weight: bold;
+}
+
+.buttonGroup,
+.buttonGroups {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.rangeButton {
+  background: white;
+  color: #f116c2;
+  font-weight: bold;
+  padding: 12px 18px;
+  border-radius: 25px;
+  cursor: pointer;
+  border: none;
+  font-size: 18px;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.rangeButton:hover {
+  background: #ddd;
+  transform: scale(1.05);
+}
+
+.rangeButton.active {
+  background: hotpink;
+  color: white;
+}
+
+.intervalButton {
+  background: white;
+  color: #f116c2;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.intervalButton:hover {
+  background: #ccc;
+  transform: scale(1.05);
+}
+
+.intervalButton.active {
+  background: #ff1493;
+  color: white;
+}
+
+.durationContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.rightlogo {
+  width: 40px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.rightlogo:hover {
+  transform: scale(1.1);
+}
+
+.durationValue {
+  font-size: 28px;
+  background-color: #ffffff;
+  border-radius: 10%;
+  padding: 15px;
+  color: #f116c2;
+  font-weight: bold;
+}
+
+.error {
+  color: red;
+  margin: 10px 0;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.nextButton {
+  background: #f116c2;
+  color: white;
+  padding: 15px 30px;
+  font-size: 20px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 20px;
+  width: 200px;
+}
+
+.nextButton:hover {
+  background: #ff69b4;
+  transform: translateY(-3px);
+}
+
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+  }
+
+  .logo {
+    width: 150px;
+  }
+
+  .rangeButton,
+  .intervalButton {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .nextButton {
+    width: 150px;
+    padding: 12px;
+  }
+} */

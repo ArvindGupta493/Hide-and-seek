@@ -1,0 +1,65 @@
+/* ===== Privacy Policy Page ===== */
+.privacyContainer {
+    max-width: 100%;
+    margin: 50px auto;
+    /* padding: 20px; */
+    background: white;
+    border-radius: 10px;
+    /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
+    text-align: left;
+    margin-top: -19px;
+  }
+
+  .logoContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: -10px;
+  }
+  
+  .logo {
+    width: 200px;
+    height: auto;
+    background-color: white;
+    border-radius: 10px;
+    padding: 5px;
+  }
+  
+  .privacyContainer h1 {
+    font-size: 34px;
+    color: #333;
+    text-align: start;
+    margin-left: 20px;
+  }
+  
+  .privacyContainer h2 {
+    font-size: 24px;
+    color: #444;
+    margin-top: 20px;
+  }
+  
+  .privacyContainer p {
+    font-size: 20px;
+    color: #666;
+    line-height: 1.5;
+  }
+  
+  /* ===== Back Button ===== */
+  .backButton {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    background: rgb(56, 126, 158);
+    color: white;
+    border: none;
+    transition: background 0.3s ease-in-out;
+    margin-left: 0px;
+  }
+  
+  .backButton:hover {
+    background: #d8117d;
+  }
+  

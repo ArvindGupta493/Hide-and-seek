@@ -1,0 +1,31 @@
+.MainContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 97vh;
+    background-color: #ffffff;
+}
+
+.leftNav {
+    display: flex;
+    align-items: center;
+}
+
+.NavbarLogo img {
+    height: auto;
+    width: auto;
+}
+
+.Content {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 18px;
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    .NavbarLogo img {
+        height: 200px;
+    }
+}

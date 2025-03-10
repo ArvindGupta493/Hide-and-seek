@@ -1,0 +1,66 @@
+.notificationContainer {
+    padding: 20px;
+    /* background-color: #fff; */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  .heading {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+  
+  .refreshButton {
+    background-color: #007bff;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 15px;
+  }
+  
+  .refreshButton:hover {
+    background-color: #0056b3;
+  }
+  
+  .notificationsList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .notificationItem {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .notificationItem:hover {
+    background: #e9ecef;
+  }
+  
+  .notificationHeader {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .userId {
+    color: #0d55cc;
+  }
+  
+  .shortMessage {
+    color: #555;
+  }
+  
+  .expandedMessage {
+    background: white;
+    padding: 8px;
+    margin-top: 5px;
+    border-top: 1px solid #ddd;
+    color: #333;
+  }
+  

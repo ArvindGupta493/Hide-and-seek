@@ -1,0 +1,2538 @@
+// ctrl + I for vscode co-piolet ai to write something realated to code
+
+
+
+
+
+
+
+
+
+const express = require("express")
+const router = express.Router()
+router.use('/admin', require('./adminRoutes'))
+router.use('/user', require('./userRoutes'))
+module.exports = router
+
+const express = require("express")
+const router = express.Router()
+const auth = require("../Middlewares/auth");
+const validate = require("../Middlewares/validation");
+const userController = require("../Controllers/user/userController");
+
+// ====================================================== ROUTES ========================================================= //
+router.post("/register",validate.registerValidate, validate.isRequestValidate, userController.registerController);
+router.post('/login', validate.loginValidate, validate.isRequestValidate, userController.loginController);
+router.get('/get_profile', auth.privateAuth, userController.getUserProfileController); 
+
+// ============================================== PASSWORD UPADTED THROUGH OTP =============================================//
+router.post('/otp_generate', validate.generateValidate, validate.isRequestValidate, userController.generateOtpController);
+router.post('/otp_verify', validate.otpValidate, validate.isRequestValidate, userController.verifyOtpController);
+router.post('/update_password', validate.updatedPwdValidate, validate.isRequestValidate, userController.updatePasswordController);
+// ===================================================== USER GAME ======================================================= //
+
+router.post('/select-player', auth.privateAuth, userController.selectPlayerController);
+router.get('/get-users-in-range', auth.privateAuth, userController.getUserListController);   
+router.post('/duration-and-interval',auth.privateAuth, userController.saveGameSettingsController);
+router.post('/choice', auth.privateAuth, userController.choiceController);
+router.post('/game-start-now', auth.privateAuth, userController.startGameNowController); 
+// ================================================== Notifiacation  ====================================================== //
+
+router.post('/request-acception', auth.privateAuth, userController.requestAcceptionController);
+router.get('/notifications' ,auth.privateAuth, userController.NotificationController);  //need to update 
+// ===================================================== USER In Process ======================================================= //
+module.exports = router; 
+
+
+
+const express = require("express")
+const router = express.Router()
+const auth = require("../Middlewares/auth")
+const validate = require("../Middlewares/validation")
+const userController = require("../Controllers/Admin/userController");
+const adminController = require("../Controllers/Admin/adminController");
+
+
+//===================================== Auth ====================================== //
+router.post("/register",  validate.adminRegisterValidate, validate.isRequestValidate, adminController.registerAdminController);
+router.post('/login', validate.adminLoginValidate, validate.isRequestValidate, adminController.loginController);
+router.get('/get-profile', auth.adminAuth, adminController.getProfile);
+router.post('/update-password', auth.adminAuth, adminController.updatePasswordController);
+router.post('/logout', auth.adminAuth, adminController.logoutController);
+
+ 
+// ================================ User Management ================================ // 
+router.get('/get-users-count', auth.adminAuth, userController.getUsersCountController);
+router.get('/get-user-list', auth.adminAuth, userController.getUserListController);
+router.get('/get-user-info/:id', auth.adminAuth, userController.getUserInfoByIdController);
+router.post('/activate/:id', auth.adminAuth, userController.activateUserByIdController);
+router.post('/deactivate/:id', auth.adminAuth, userController.deactivateUserByIdController);
+
+// =================================  NOTIFICATIONS =========================================== //
+router.get('/notifications', auth.adminAuth, adminController.getAdminNotifications);  //need adjustment
+
+module.exports = router
+
+
+
+
+
+const jwt = require("jsonwebtoken")
+const Promise = require("bluebird")
+
+class Authentication{
+  
+    privateAuth(req, res, next) {
+        var token = req.headers.authorization;
+ 
+        // Check if authorization header exists
+        if (!token) {
+            return res.status(401).json({"ResponseCode": 401,"ResponseMessage": "Authorization header is missing.","succeeded": false,"ResponseData": {}});
+        }
+        token = token.split(' ');                                              // Split the token and check if it's in the correct format
+        if (token[0] !== 'Bearer' || !token[1]) {
+            return res.status(401).json({"ResponseCode": 401,"ResponseMessage": "Invalid token format.","succeeded": false,"ResponseData": {} });
+        }
+
+        token = token[1];                                                     // Extract the actual token
+        var privatekey = process.env.PRIVATE_KEY;
+        jwt.verify(token, privatekey, (err, decoded) => {                     // Verify the token                          
+            if (err) {
+                return res.status(401).json({"ResponseCode": 401,"ResponseMessage": "Invalid token.","succeeded": false,"ResponseData": { token }});
+            } else {
+                req.decoded = decoded;
+                next();
+            }
+        });
+    }
+
+
+    adminAuth(req, res, next) {
+        var token = req.headers.authorization;
+
+        if (!token) {                                    // Check if authorization header exists
+            return res.status(401).json({ "ResponseCode": 401, "ResponseMessage": "Authorization header is missing.", "succeeded": false, "ResponseData": {}  });
+        }
+        token = token.split(' ');                        // Split the token and check if it is in the correct format
+        if (token[0] !== 'Bearer' || !token[1]) {
+            return res.status(401).json({"ResponseCode": 401, "ResponseMessage": "Invalid token format.", "succeeded": false, "ResponseData": {}})
+        }
+        token = token[1];                                                                // Extract the actual token
+        var adminkey = process.env.ADMIN_KEY;
+        jwt.verify(token, adminkey, (err, decoded) => {                                  // Verify the token
+            if (err) {
+                return res.status(401).json({  "ResponseCode": 401, "ResponseMessage": "Invalid token.", "succeeded": false, "ResponseData": { token }});
+            } else {req.decoded = decoded;   
+                next();
+            }
+        });
+    }
+    
+}
+
+module.exports = new Authentication()
+
+
+
+
+import { Routes, Route } from 'react-router-dom';
+import Register from './components/Register/Register';
+import Login from './components/Login/Login';
+import LandingPage from './components/LandingPage/LandingPage';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import Forgetpassword from './components/forgot-password/Forgetpassword';
+import Verification from './components/verification/verification';
+import ResetPassword from './components/reset-password/Resetpassword';
+import Home from './components/Home/Home';
+import StartGame from './components/start game/start-game';
+import Gamestarted from './components/Game-started/GameStarted';
+import CountdownPage from './components/countdown/countdown'
+import GameInPRogress from './components/game-in-progress/game-in-progress'  
+import Won from './components/game-over-won/won';
+import Confirmation from './components/confirmation/confirmation';
+import Lost from './components/game-over-lost/lost';
+import Cheater from './components/cheater/cheater';
+import Pause from './components/pause/pause';
+import Hamberger from './components/hamberger/hamberger';
+import AboutUs from './components/AboutUs/AboutUs';
+import ContactUs from './components/ContactUs/ContactUs';
+import MyProfile from './components/myProfile/myProfile';
+import GameHistory from './components/gameHistroy/gameHistroy';
+import Policies from './components/policies/policies';
+
+
+const App = () => {
+  return (
+      <Routes>
+
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forget-password" element={<Forgetpassword />} />
+        <Route path="/verification" element={<Verification />} />
+        <Route path="/reset-password" element={<ResetPassword/>}/>
+        <Route path="/home" element={<Home />} />
+        <Route path="/start-game" element={<StartGame />} />
+        <Route path="/game-started" element={<Gamestarted />} />
+        <Route path="/countdown" element={<CountdownPage />} />
+        <Route path="/game-in-progress" element={<GameInPRogress />} />
+        <Route path="/won" element={<Won />} />
+        <Route path="/lost" element={<Lost />} />
+        <Route path="/confirmation" element={<Confirmation />} />
+        <Route path="/cheater" element={<Cheater />} />
+        <Route path="/pause" element={<Pause />} />
+        <Route path="/hamberger" element={<Hamberger />} />
+        <Route path="/about-us" element={<AboutUs />} />
+        <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/my-account" element={<MyProfile />} />
+        <Route path="/game-history" element={<GameHistory />} />
+        <Route path="/privacy-policy" element={<Policies />} />
+
+      </Routes>
+  );
+};
+
+export default App;
+
+
+
+
+as you can see i already created backend fro the admin panel so now how do i start creating admin panel in the frontend 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here’s a structured approach for your **Admin Dashboard** in React:
+
+---
+
+### **Admin Dashboard Components**
+1. **User Management**
+   - `UserList` (Shows all users)
+   - `UserInfo` (Detailed user info)
+   - `ActivateUser` (Activate a user)
+   - `DeactivateUser` (Deactivate a user)
+   - `UserActivities` (Track user actions)
+
+2. **Game Management**
+   - Manage game requests
+   - View active/inactive games
+   - Modify game settings
+
+3. **Notifications**
+   - Send notifications to users
+   - View past notifications
+
+4. **Profile**
+   - Admin profile details
+   - Update admin info
+
+5. **Logout**
+   - Secure logout functionality
+
+6. **Admin Dashboard**
+   - Overview with statistics
+
+7. **User Count**
+   - Displays total registered users
+
+8. **User List**
+   - Fetch and display user data
+
+9. **User Info**
+   - Show specific user detailsHere’s a structured approach for your **Admin Dashboard** in React:
+
+---
+
+### **Admin Dashboard Components**
+1. **User Management**
+   - `UserList` (Shows all users)
+   - `UserInfo` (Detailed user info)
+   - `ActivateUser` (Activate a user)
+   - `DeactivateUser` (Deactivate a user)
+   - `UserActivities` (Track user actions)
+
+2. **Game Management**
+   - Manage game requests
+   - View active/inactive games
+   - Modify game settings
+
+3. **Notifications**
+   - Send notifications to users
+   - View past notifications
+
+4. **Profile**
+   - Admin profile details
+   - Update admin info
+
+5. **Logout**
+   - Secure logout functionality
+
+6. **Admin Dashboard**
+   - Overview with statistics
+
+7. **User Count**
+   - Displays total registered users
+
+8. **User List**
+   - Fetch and display user data
+
+9. **User Info**
+   - Show specific user details
+
+---
+
+### **Implementation Plan**
+- **Backend (Express + MongoDB)**
+  - Create routes for user actions (GET user list, POST activate/deactivate user)
+  - Implement WebSockets for real-time notifications
+  - Manage game-related operations
+
+- **Frontend (React + Tailwind)**
+  - Sidebar navigation for different sections
+  - Dashboard overview with stats
+  - User table with actions (activate, deactivate, view details)
+  - Game management UI
+
+---
+
+### **Next Steps**
+Do you want:
+1. A basic React template with components?
+2. A backend API setup for admin functions?
+3. Full integration (frontend + backend)?
+
+Let me know how detailed you need it! 🚀
+
+---
+
+### **Implementation Plan**
+- **Backend (Express + MongoDB)**
+  - Create routes for user actions (GET user list, POST activate/deactivate user)
+  - Implement WebSockets for real-time notifications
+  - Manage game-related operations
+
+- **Frontend (React + Tailwind)**
+  - Sidebar navigation for different sections
+  - Dashboard overview with stats
+  - User table with actions (activate, deactivate, view details)
+  - Game management UI
+
+---
+
+### **Next Steps**
+Do you want:
+1. A basic React template with components?
+2. A backend API setup for admin functions?
+3. Full integration (frontend + backend)?
+
+Let me know how detailed you need it! 🚀
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+src/
+│── components/
+│   ├── Sidebar.jsx
+│   ├── Header.jsx
+│── pages/
+│   ├── Dashboard.jsx
+│   ├── Users.jsx
+│   ├── UserInfo.jsx
+│   ├── Notifications.jsx
+│── services/
+│   ├── api.js
+│── App.jsx
+│── main.jsx
+│── index.css
+
+
+
+
+
+
+
+
+
+
+
+
+//    src/services/api.js
+
+import axios from "axios";
+
+const API = axios.create({ baseURL: "http://localhost:5000/api/admin" });
+
+// Attach token to headers
+API.interceptors.request.use((req) => {
+  const token = localStorage.getItem("adminToken");
+  if (token) req.headers.Authorization = `Bearer ${token}`;
+  return req;
+});
+
+export const login = (data) => API.post("/login", data);
+export const getUsersCount = () => API.get("/get-users-count");
+export const getUserList = () => API.get("/get-user-list");
+export const getUserInfo = (id) => API.get(`/get-user-info/${id}`);
+export const activateUser = (id) => API.post(`/activate/${id}`);
+export const deactivateUser = (id) => API.post(`/deactivate/${id}`);
+export const getNotifications = () => API.get("/notifications");
+
+
+
+// src/components/Sidebar.jsx
+
+import { Link } from "react-router-dom";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import PeopleIcon from "@mui/icons-material/People";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import LogoutIcon from "@mui/icons-material/Logout";
+
+const Sidebar = () => {
+  return (
+    <div className="h-screen w-60 bg-gray-800 text-white p-5">
+      <h2 className="text-2xl font-bold mb-5">Admin Panel</h2>
+      <ul>
+        <li className="mb-3"><Link to="/" className="flex items-center"><DashboardIcon /> Dashboard</Link></li>
+        <li className="mb-3"><Link to="/users" className="flex items-center"><PeopleIcon /> Users</Link></li>
+        <li className="mb-3"><Link to="/notifications" className="flex items-center"><NotificationsIcon /> Notifications</Link></li>
+        <li className="mt-5"><button className="flex items-center"><LogoutIcon /> Logout</button></li>
+      </ul>
+    </div>
+  );
+};
+
+export default Sidebar;
+
+
+
+// src/pages/Dashboard.jsx
+
+import { useEffect, useState } from "react";
+import { getUsersCount } from "../services/api";
+
+const Dashboard = () => {
+  const [userCount, setUserCount] = useState(0);
+
+  useEffect(() => {
+    getUsersCount().then((res) => setUserCount(res.data.count)).catch(console.error);
+  }, []);
+
+  return (
+    <div className="p-5">
+      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+      <div className="bg-blue-500 text-white p-5 rounded">
+        <h2 className="text-lg">Total Users</h2>
+        <p className="text-3xl font-bold">{userCount}</p>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
+
+
+
+
+
+
+src/pages/Users.jsx
+
+import { useEffect, useState } from "react";
+import { getUserList, activateUser, deactivateUser } from "../services/api";
+
+const Users = () => {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    getUserList().then((res) => setUsers(res.data.users)).catch(console.error);
+  }, []);
+
+  const handleActivate = (id) => {
+    activateUser(id).then(() => alert("User activated!")).catch(console.error);
+  };
+
+  const handleDeactivate = (id) => {
+    deactivateUser(id).then(() => alert("User deactivated!")).catch(console.error);
+  };
+
+  return (
+    <div className="p-5">
+      <h1 className="text-2xl font-bold mb-4">Users List</h1>
+      <table className="w-full border-collapse border border-gray-300">
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="border p-2">Name</th>
+            <th className="border p-2">Email</th>
+            <th className="border p-2">Status</th>
+            <th className="border p-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user) => (
+            <tr key={user._id} className="border">
+              <td className="p-2">{user.name}</td>
+              <td className="p-2">{user.email}</td>
+              <td className="p-2">{user.isActive ? "Active" : "Inactive"}</td>
+              <td className="p-2">
+                {user.isActive ? (
+                  <button onClick={() => handleDeactivate(user._id)} className="bg-red-500 text-white px-3 py-1">Deactivate</button>
+                ) : (
+                  <button onClick={() => handleActivate(user._id)} className="bg-green-500 text-white px-3 py-1">Activate</button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default Users;
+
+
+
+
+
+src/App.jsx
+
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Sidebar from "./components/Sidebar";
+import Dashboard from "./pages/Dashboard";
+import Users from "./pages/Users";
+import Notifications from "./pages/Notifications";
+
+function App() {
+  return (
+    <Router>
+      <div className="flex">
+        <Sidebar />
+        <div className="flex-1 p-5">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/users" element={<Users />} />
+            <Route path="/notifications" element={<Notifications />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import StartGame from "./components/start game/start-game";
+import Dashboard from "./admin/Dashboard/Dashboard";
+
+const App = () => {
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("userId"); // Adjust according to your storage method
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/start-game" element={<StartGame userId={userId} />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The error **"Token Verification Failed: jwt malformed"** happens when the JWT (JSON Web Token) passed in the request is **invalid or corrupted**. Here’s how to debug and fix it:
+
+---
+
+## 🔹 **Possible Causes and Fixes**
+### ✅ **1. Ensure Token Format is Correct**
+In your `privateAuth` middleware, you extract the token like this:
+```javascript
+let token = req.headers.authorization;
+if (!token) {
+    console.error("Missing Authorization Header");
+    return res.status(401).json({ "ResponseCode": 401, "ResponseMessage": "Authorization header is missing.", "succeeded": false, "ResponseData": {} });
+}
+token = token.split(' ');
+if (token[0] !== 'Bearer' || !token[1]) {
+    console.error("Invalid Token Format");
+    return res.status(401).json({ "ResponseCode": 401, "ResponseMessage": "Invalid token format.", "succeeded": false, "ResponseData": {} });
+}
+token = token[1]; // Extract the actual token
+```
+🔹 **Check your request headers:**  
+The `Authorization` header must be in this format:  
+```
+Authorization: Bearer <your-jwt-token>
+```
+🚀 **Fix:** Ensure the request is sending the token correctly.
+
+---
+
+### ✅ **2. Check if the Token is Being Modified or Corrupted**
+Try logging the token **before verification**:
+```javascript
+console.log("Received Token:", token);
+```
+If it’s empty, **your frontend may not be sending it properly**.
+
+🚀 **Fix:** If using Postman or a frontend, ensure that the token is being attached properly to the request.
+
+---
+
+### ✅ **3. Ensure the Token is Properly Signed**
+Your `jwt.verify` call:
+```javascript
+jwt.verify(token, process.env.PRIVATE_KEY, (err, decoded) => {
+```
+🔹 **Possible Issue:** If `process.env.PRIVATE_KEY` doesn’t match the key used to sign the token.
+
+🚀 **Fix:** Ensure your JWT secret matches the one used in **token generation**:
+```javascript
+const token = jwt.sign({ id: user._id }, process.env.PRIVATE_KEY, { expiresIn: '1h' });
+```
+Check if `PRIVATE_KEY` is correctly loaded in your `.env` file:
+```
+PRIVATE_KEY=your-secret-key
+```
+Then restart your server:
+```bash
+npm run dev  # or node server.js
+```
+
+---
+
+### ✅ **4. Ensure Token is Not Expired**
+If you set `expiresIn`, an expired token will result in an error.
+
+🚀 **Fix:** Check for expiration errors:
+```javascript
+jwt.verify(token, process.env.PRIVATE_KEY, (err, decoded) => {
+    if (err) {
+        console.error("Token Verification Failed:", err.message);
+        return res.status(401).json({ "ResponseCode": 401, "ResponseMessage": "Invalid token.", "succeeded": false, "ResponseData": { token } });
+    }
+    req.decoded = decoded;
+    next();
+});
+```
+If it says **"jwt expired"**, generate a **new token** and retry.
+
+---
+
+### ✅ **5. Check if the Token is Blacklisted**
+If you are blacklisting tokens on logout, make sure you’re checking properly:
+```javascript
+const blacklistedToken = await BlacklistedToken.findOne({ token });
+if (blacklistedToken) {
+    return res.status(401).json({ success: false, message: "Token is blacklisted." });
+}
+```
+🚀 **Fix:** If blacklisting is causing issues, try **removing expired tokens** from the blacklist.
+
+---
+
+## **🚀 Final Steps**
+1. **Log the received token** before verification.
+2. **Ensure the token is sent correctly** (Bearer `<token>` format).
+3. **Ensure the secret key matches** what was used to sign the token.
+4. **Check if the token is expired** and refresh it if needed.
+5. **Ensure the token is not blacklisted incorrectly**.
+
+Try these fixes and let me know if you need more help! 🚀🔥
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Your backend login and logout seem to be functioning correctly, but the frontend is facing an issue when verifying the token. The error **"Token Verification Failed jwt malformed"** suggests that either:
+
+1. The token is not being sent properly from the frontend.
+2. The token is being corrupted during storage or retrieval.
+3. The backend is unable to verify the token due to issues with `jwt.sign()` or `jwt.verify()`.
+4. The frontend is sending an incorrect token format or not sending it at all.
+
+### **Debugging Steps**
+#### **1. Check if the token is correctly received in the frontend**
+After login, add this debug statement to check if the token is being stored correctly:
+
+```javascript
+try {
+  const response = await axios.post(loginApi, loginForm);
+  console.log("Received Token:", response.data.token); // Debugging
+
+  localStorage.setItem("token", response.data.token);
+  localStorage.setItem("role", isAdmin ? "admin" : "user");
+
+  toast.success(response.data.ResponseMessage);
+  navigate(isAdmin ? "/adminDashboard" : "/home");
+} catch (error) {
+  console.error("Login Error:", error.response?.data || error.message);
+  toast.error(error.response?.data?.ResponseMessage || "Login failed");
+}
+```
+- Open **Developer Tools (F12) → Console** and check if the token is properly logged.
+- If `response.data.token` is undefined, it means the backend is not returning a token properly.
+
+#### **2. Ensure the frontend sends the token properly for protected routes**
+If the token is stored properly but the backend still throws "jwt malformed," check if it's being sent correctly in API calls:
+
+```javascript
+const token = localStorage.getItem("token");
+console.log("Sending Token:", token); // Debugging
+
+axios.get("http://localhost:5000/api/protected-route", {
+  headers: { Authorization: `Bearer ${token}` },
+})
+.then(response => console.log("Response:", response.data))
+.catch(error => console.error("Token Verification Error:", error.response?.data || error.message));
+```
+- If `token` is `null` or empty, it means it's not stored properly in `localStorage`.
+
+#### **3. Validate Backend Token Generation**
+In `generateToken(user)`, ensure `process.env.PRIVATE_KEY` is properly set in your **.env** file:
+
+```javascript
+console.log("PRIVATE_KEY:", process.env.PRIVATE_KEY); // Debugging
+
+return jwt.sign({ id: user._id }, process.env.PRIVATE_KEY, { expiresIn: '7d' });
+```
+If `PRIVATE_KEY` is missing or incorrect, regenerate a valid private key.
+
+#### **4. Ensure Token Verification in Backend**
+Modify `privateAuth` to log the token before verifying:
+
+```javascript
+console.log("Received Token:", token); // Debugging
+
+jwt.verify(token, process.env.PRIVATE_KEY, (err, decoded) => {
+  if (err) {
+    console.error("Token Verification Failed:", err.message); // Debugging
+    return res.status(401).json({ ResponseMessage: "Invalid token." });
+  }
+  req.decoded = decoded;
+  next();
+});
+```
+- If `Token Verification Failed: jwt malformed` appears, it means the token is invalid or improperly formatted.
+
+---
+
+### **Expected Fixes**
+- If `response.data.token` is `undefined`, fix your backend to ensure it properly returns the token.
+- If `localStorage.getItem("token")` is `null`, ensure the frontend stores it correctly after login.
+- If the backend rejects the token, check if `jwt.sign()` uses the correct secret key (`PRIVATE_KEY`).
+- If the token format is incorrect, ensure `Authorization: Bearer <token>` is used in requests.
+
+Try these steps and let me know what the logs show! 
+
+
+
+
+Can you clarify what issue you're facing with live location? Are nearby users not updating in real-time, or is there a problem with detecting the user's location accurately? Let me know the exact problem so I can provide a solution.
+
+what i want is that the interval set by the user to which the location of the user is sent to the opponent how many times and each duration is set to be 2 minutes  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+If the Google Map is not showing the live location of the user, here’s a checklist to debug the issue:
+
+1. API Key Configuration
+✅ Ensure you have replaced "YOUR_GOOGLE_MAPS_API_KEY" with your actual Google Maps API key.
+
+2. Enable Required APIs in Google Cloud Console
+Go to Google Cloud Console and make sure these APIs are enabled:
+
+Maps JavaScript API
+Geolocation API
+3. API Key Restrictions
+Check if your API key is restricted:
+
+Go to Google Cloud Console > APIs & Services > Credentials.
+Click on your API key.
+Under Application Restrictions, select:
+"HTTP Referrers (Websites)" and add your localhost URL (e.g., http://localhost:3000).
+Save the changes.
+4. Billing Account
+Google Maps API requires Billing Account setup even for free usage. Make sure:
+
+Go to Google Cloud Console > Billing.
+Create a billing account if you haven't already.
+Link your billing account to your project.
+5. Browser Console Errors
+Open your browser's Developer Console (Ctrl + Shift + I or F12 in Chrome) and check if there’s any error like:
+
+RefererNotAllowedMapError
+ApiNotActivatedMapError
+InvalidKeyMapError
+GeolocationPositionError
+If you see any of these errors, let me know, and I can guide you accordingly.
+
+6. Enable High Accuracy for Geolocation
+In your navigator.geolocation.watchPosition method, you need to set:
+
+js
+Copy
+Edit
+{ enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+✅ You already have this, so that's fine.
+
+7. Re-check Map Library Import
+Ensure the correct import:
+
+js
+Copy
+Edit
+import { GoogleMap, Circle, LoadScript } from "@react-google-maps/api";
+8. Map Container Style
+Make sure the map container has a fixed height and width:
+
+css
+Copy
+Edit
+#map {
+  height: 400px; 
+  width: 100%; 
+  border-radius: 15px;
+}
+9. Test with Plain Map (Without Circle)
+Comment out the Circle component first and only show the map:
+
+jsx
+Copy
+Edit
+<GoogleMap mapContainerStyle={mapContainerStyle} center={userLocation} zoom={15}>
+</GoogleMap>
+If the map works, the issue is with the Circle component.
+
+10. Console Debug
+Add console.log(userLocation) before rendering the map to ensure the location is being fetched correctly:
+
+jsx
+Copy
+Edit
+console.log("User Location:", userLocation);
+Try these steps, and let me know which error you're seeing or if the map still doesn't show.
+
+
+
+
+
+
+
+
+
+
+
+
+
+If the Google Map is not working and not showing the live location, here are the possible causes and solutions based on your code:
+
+✅ 1. Google Maps API Key Verification
+Make sure you have replaced:
+
+javascript
+Copy
+Edit
+<LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
+with your actual Google Maps API key.
+
+To get the API Key:
+
+Go to Google Cloud Console.
+Create a project.
+Enable Google Maps JavaScript API.
+Generate API Key.
+Enable Billing for your project.
+✅ 2. API Key Restrictions
+Check if your API key is restricted to specific websites or IP addresses:
+
+Go to Google Cloud Console > Credentials.
+Select your API Key.
+Under Application Restrictions, select None for testing.
+Under API Restrictions, select Google Maps JavaScript API.
+✅ 3. Enable Necessary APIs
+Ensure the following APIs are enabled:
+
+Maps JavaScript API
+Geolocation API
+You can enable them from Google Cloud Console > Library.
+
+✅ 4. HTTPS Requirement
+Geolocation API only works on HTTPS or localhost.
+
+If you're testing on http://localhost, it will work.
+But if you're hosting it, make sure your site is using https://.
+
+✅ 5. Google Maps Library Load Order
+Make sure LoadScript is wrapping your map correctly:
+
+jsx
+Copy
+Edit
+<LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
+  <GoogleMap ...>
+    {/* Your Circles and Markers Here */}
+  </GoogleMap>
+</LoadScript>
+✅ 6. Latitude & Longitude Initialization
+Ensure that the user's live location is set properly before rendering the map:
+
+javascript
+Copy
+Edit
+if (userLocation.lat !== 0 && userLocation.lng !== 0) {
+  return (
+    <GoogleMap mapContainerStyle={mapContainerStyle} center={userLocation} zoom={15}>
+      <Circle center={userLocation} radius={500} options={{ strokeColor: "#00ff00", fillColor: "#00ff0050" }} />
+    </GoogleMap>
+  );
+}
+Without this, the map might not update when the location is 0, 0.
+
+✅ 7. Console Errors
+Open Developer Console (F12) and check for any errors like:
+
+RefererNotAllowedMapError
+Invalid API Key
+Geolocation Not Allowed
+✅ 8. Clear Browser Cache
+Try clearing your browser cache:
+
+Press Ctrl + Shift + R (Windows)
+Cmd + Shift + R (Mac)
+Example of Working Google Map with Live Location
+jsx
+Copy
+Edit
+<LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
+  {userLocation.lat !== 0 && userLocation.lng !== 0 && (
+    <GoogleMap mapContainerStyle={mapContainerStyle} center={userLocation} zoom={15}>
+      <Circle center={userLocation} radius={500} options={{ strokeColor: "#00ff00", fillColor: "#00ff0050" }} />
+      {opponentLocation && (
+        <Circle center={opponentLocation} radius={500} options={{ strokeColor: "#ff0000", fillColor: "#ff000050" }} />
+      )}
+    </GoogleMap>
+  )}
+</LoadScript>
+If you're still facing issues, let me know what error appears in the console! 🚀
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The issue could be related to how you're handling the creation and updating of game settings. Here are some possible reasons why `gameId` is not being generated properly:
+
+### 1. **GameSettings Not Being Created New Every Time**  
+In your controller, you first check if `GameSettings` exists for the user. If it does, you simply update it instead of creating a new one. Since `userId` is unique in `GameSettings`, only one entry per user exists, meaning multiple games won't generate unique `_id`s.
+
+#### **Solution**
+Always create a new `GameSettings` document instead of updating an existing one. Modify this part:
+
+```js
+if (!gameSettings) {
+    gameSettings = new GameSettings({
+        players: [userId, opponent._id],
+        radius: req.body.range,
+        duration: req.body.duration,
+        interval: req.body.interval,
+        status: 'in-progress',
+        startTime: Date.now(),
+        endTime: Date.now() + req.body.duration * 60000,
+        userId,
+    });
+} else {
+    gameSettings.status = 'in-progress';
+    gameSettings.startTime = Date.now();
+    gameSettings.endTime = Date.now() + gameSettings.duration * 60000;
+}
+```
+
+Replace it with:
+
+```js
+gameSettings = new GameSettings({
+    players: [userId, opponent._id],
+    radius: req.body.range,
+    duration: req.body.duration,
+    interval: req.body.interval,
+    status: 'in-progress',
+    startTime: Date.now(),
+    endTime: Date.now() + req.body.duration * 60000,
+    userId,
+});
+
+await gameSettings.save();
+```
+
+This ensures a new `GameSettings` entry is created for each game, generating a unique `_id`.
+
+---
+
+### 2. **MongoDB Unique Constraint on `userId`**  
+Your schema has `userId` set as `unique: true`, meaning each user can have only **one** game record at a time.
+
+#### **Solution**
+If you want a user to start multiple games, remove the uniqueness constraint from `userId`:
+
+```js
+userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+```
+
+Instead, query games using `{ players: userId }` rather than `{ userId }`.
+
+---
+
+### 3. **Ensure `await gameSettings.save();` is Executing Properly**  
+If the game isn't being created properly, check if `gameSettings.save();` throws an error. Add a log:
+
+```js
+await gameSettings.save()
+    .then((savedGame) => console.log("Game saved:", savedGame))
+    .catch((err) => console.error("Error saving game:", err));
+```
+
+This will help you identify if the game is actually being saved.
+
+---
+
+### 4. **Game ID is Not Being Sent in Response Properly**  
+Check if `gameSettings._id` is `undefined` in the response. Modify this:
+
+```js
+return res.status(200).json({ success: true, message: "Game started!", gameId: gameSettings._id });
+```
+
+To:
+
+```js
+console.log("Game ID:", gameSettings._id); // Debugging
+return res.status(200).json({ success: true, message: "Game started!", gameId: gameSettings._id });
+```
+
+If `gameSettings._id` is `undefined`, then MongoDB is not saving the document properly.
+
+---
+
+### **Final Steps**
+1. **Ensure a new `GameSettings` is created every time.**
+2. **Remove the `unique: true` constraint on `userId` if users can start multiple games.**
+3. **Check if `gameSettings.save()` executes properly.**
+4. **Log `gameSettings._id` before sending the response.**
+
+Try these fixes and let me know what logs you get! 🚀
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// old saveGameSettingsController
+
+async saveGameSettingsController(req, res) {
+    try {
+        const userId = req.decoded.id;
+        const { duration, interval, radius, opponentId } = req.body;
+
+        if (!duration || !interval || !radius || !opponentId) {
+            return res.status(400).json({ success: false, message: "All fields are required, including opponentId" });
+        }
+        if (interval < 1 || interval > 5) {
+            return res.status(400).json({ success: false, message: "Interval must be between 1 and 5 minutes" });
+        }
+        const parsedRadius = parseInt(radius, 10);
+        if (![1, 2, 3, 4, 5].includes(parsedRadius)) {
+            return res.status(400).json({ success: false, message: "Radius must be between 1km and 5km" });
+        }
+
+        let gameSettings = await GameSettings.findOne({ userId });
+
+        if (gameSettings) {
+            // Update existing game settings
+            gameSettings.duration = duration;
+            gameSettings.interval = interval;
+            gameSettings.radius = parsedRadius;
+            gameSettings.players = [userId, opponentId].filter((v, i, a) => a.indexOf(v) === i);
+            gameSettings.status = "waiting";
+            gameSettings.startTime = null;
+            gameSettings.endTime = null;
+        } else {
+            // Create new game settings
+            gameSettings = new GameSettings({
+                userId,
+                duration,
+                interval,
+                radius: parsedRadius,
+                players: [userId, opponentId].filter((v, i, a) => a.indexOf(v) === i),
+                status: "waiting",
+                startTime: null,
+                endTime: null,
+            });
+        }
+
+        await gameSettings.save();
+        res.status(200).json({ success: true, settings: gameSettings });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const Promise = require("bluebird");
+const crypto = require('crypto');
+const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
+
+const { SuccessHandler } = require("../../Middlewares/responseHandler");
+const { sendOtpEmail } = require('../../Services/otpService');
+const userService = require("../../Services/userService");
+const UserModel = require('../../Models/UserModel'); 
+const ErrorHandler = require("../../Utils/errorHandler");
+const sendEmail = require('../../Utils/sendEmail'); 
+
+const GameSettings = require("../../Models/GameSettings");
+const  NotificationModel  = require("../../Models/NotificationModel");
+const { sendNotification } = require("../../Services/notificationService");
+const { log } = require("console");
+const BlacklistedToken = require("../../Models/BlacklistedToken.js");
+
+
+class UserController {
+    
+    async  registerController(req, res, next) {
+        try {
+            const user = await userService.registerService(req.body);
+            return SuccessHandler(res, user.msg, 201, user.data);
+        } catch (error) {
+            return next(new ErrorHandler("Something went wrong during registration.", 500, error));
+        }
+    }
+    
+    async loginController(req, res, next) {
+        try {
+            const { email, password } = req.body;
+            const user = await userService.loginService({ email, password });
+    
+            if (!user.success) {
+                return res.status(user.status).json({ success: user.success, message: user.msg });
+            }
+    
+            const { token } = user.data;              // Ensure 'token' is extracted correctly
+            if (!token) {
+                throw new Error("Token is missing in response from loginService");
+            }
+            console.log("Received Token:", token);
+            return SuccessHandler(res, user.msg, user.status, user.data);
+        } catch (error) {
+            return next(new ErrorHandler("Something went wrong during login.", 500, error));
+        }
+    }
+     
+    async logoutController(req, res, next) {
+        try {
+            const token = req.headers.authorization?.split(" ")[1]; 
+    
+            if (!token) {
+                return res.status(401).json({ success: false, message: "No token provided." });
+            }
+
+            await BlacklistedToken.create({ token });     // Add token to blacklist
+            res.status(200).json({ success: true, message: "Logout successful." });
+        } catch (error) {
+            return next(new ErrorHandler("Something went wrong during logout.", 500, error));
+        }
+    }
+
+        async generateOtpController(req, res) {
+            try {
+                const { email } = req.body;
+                const user = await UserModel.findOne({ email });
+        
+                if (!user) {
+                    return res.status(404).json({ success: false, message: 'User not found.' });
+                }
+        
+                const otp = crypto.randomInt(1000, 9999).toString();
+                const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+                const otpExpires = new Date(Date.now() + 10000 * 60 * 1000); // 10000 minutes expiry
+        
+                // Update the existing user with OTP and expiry
+                user.otp = hashedOtp;
+                user.otpExpires = otpExpires;
+                await user.save();
+        
+                await sendEmail(user.email, 'Your OTP Code', `Your OTP is: ${otp}`);
+                console.log(`OTP sent to ${email}: ${otp}`); // For debugging only. Remove in production.
+        
+                res.status(200).json({ success: true, message: 'OTP sent successfully.' });
+            } catch (error) {
+                console.error('Error generating OTP:', error);
+                res.status(500).json({ success: false, message: 'Error generating OTP.' });
+            }
+        }
+
+        
+        async verifyOtpController(req, res, next) {
+            try {
+                const { email, otp } = req.body;
+                console.log("Verifying OTP for email:", email); // Debugging line
+        
+                const user = await UserModel.findOne({ email: email.toLowerCase() }).select("+otp +otpExpires");
+                console.log("User found:", user); // Debugging line
+                if (!user) {
+                    return res.status(404).json({ success: false, message: 'User not found.' });
+                }
+        
+                const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+                if (user.otp !== hashedOtp || user.otpExpires < new Date()) {
+                    return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
+                }
+
+                await user.save();
+                res.status(200).json({ success: true, message: 'OTP verified successfully.' });
+            } catch (error) {
+                console.error("Error verifying OTP:", error);  // Debugging line
+                return next(new ErrorHandler("Error verifying OTP.", 500, error));
+            }
+        }
+
+        async updatePasswordController(req, res) {
+            try {
+                const { email, otp, newPassword, confirmPassword } = req.body;
+        
+                // Validate input fields
+                if (!email || !otp || !newPassword || !confirmPassword) {
+                    return res.status(400).json({ message: "All fields are required." });
+                }
+                if (newPassword !== confirmPassword) {
+                    return res.status(400).json({ message: "Passwords do not match." });
+                }
+                // Check if the user exists
+                const user = await UserModel.findOne({ email }).select("+otp +otpExpires");
+                if (!user) {
+                    return res.status(404).json({ message: "User not found." });
+                }
+                // Validate OTP
+                const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+                console.log("Hashed OTP (Input):", hashedOtp);
+                console.log("Stored OTP in DB:", user.otp);
+                console.log("OTP Expiry:", user.otpExpires);
+                console.log("Current Time:", new Date());
+                
+                if (user.otp !== hashedOtp || user.otpExpires < new Date()) {
+                    return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
+                }
+                // Hash new password
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+                // Update password and clear OTP
+                user.password = hashedPassword;
+                user.otp = undefined;
+                user.otpExpires = undefined;
+                await user.save();
+    
+                return res.status(200).json({ message: "Password updated successfully." });
+            } catch (error) {
+                console.error("Error updating password:", error);
+                return res.status(500).json({ message: "Internal server error." });
+            }
+        }
+// ===================================== Select a player and save in the database ================================= //
+
+async selectPlayerController(req, res) {
+    try {
+        const { opponentId, opponentUsername, duration, interval } = req.body;
+        const userId = req.decoded.id;
+
+        if (!opponentId && !opponentUsername) {
+            return res.status(400).json({ success: false, message: "Opponent ID or Username is required." });
+        }
+
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // Find opponent by ID or username
+        let opponent;
+        if (opponentId) {
+            opponent = await UserModel.findById(opponentId);
+        } else if (opponentUsername) {
+            opponent = await UserModel.findOne({ username: opponentUsername });
+        }
+
+        if (!opponent) {
+            return res.status(404).json({ success: false, message: "Opponent not found." });
+        }
+
+        user.opponentId = opponent._id;
+        opponent.opponentId = userId;
+
+        // Save game settings
+        user.gameSettings = { duration, interval };
+        opponent.gameSettings = { duration, interval };
+
+        await user.save();
+        await opponent.save();
+
+        res.status(200).json({ 
+            success: true, 
+            message: "Opponent selected and game settings saved successfully.", 
+            selectedOpponent: { id: opponent._id, username: opponent.username },
+            gameSettings: { duration, interval }
+        });
+
+    } catch (error) {
+        console.error("Error selecting opponent:", error);
+        res.status(500).json({ success: false, message: "Server error." });
+    }
+}
+
+  
+// ================================ Save game settings with userId and opponentId =============================== //
+
+async saveGameSettingsController(req, res) {
+    try {
+        const userId = req.decoded.id;
+        const { duration, interval, radius, opponentId } = req.body;
+
+        if (!duration || !interval || !radius || !opponentId) {
+            return res.status(400).json({ success: false, message: "All fields are required, including opponentId" });
+        }
+        if (interval < 1 || interval > 5) {
+            return res.status(400).json({ success: false, message: "Interval must be between 1 and 5 minutes" });
+        }
+        const parsedRadius = parseInt(radius, 10);
+        if (![1, 2, 3, 4, 5].includes(parsedRadius)) {
+            return res.status(400).json({ success: false, message: "Radius must be between 1km and 5km" });
+        }
+
+        // Check if opponent exists in the database
+        const opponent = await UserModel.findById(opponentId);
+        if (!opponent) {
+            return res.status(400).json({ success: false, message: "Opponent not found." });
+        }
+
+        // CREATE A NEW GAME SETTINGS DOCUMENT FOR EACH GAME
+        const gameSettings = new GameSettings({
+            userId,
+            duration,
+            interval,
+            radius: parsedRadius,
+            players: [userId, opponentId], 
+            status: "waiting",
+            startTime: null,
+            endTime: null,
+        });
+
+        await gameSettings.save();
+        console.log("Game Settings Saved:", gameSettings); // Debugging
+
+
+        res.status(200).json({ success: true, settings: gameSettings });
+    } catch (error) {
+        console.error("Error saving game settings:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+
+// ============================== choiceController: First player selects "hide" or "seek" ============================== //
+
+async choiceController(req, res) {
+    try {
+        const { choice } = req.body;
+        const userId = req.decoded.id;
+
+        // Find the user
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+        user.role = choice;
+
+        // Find the opponent
+        const opponent = await UserModel.findOne({ _id: user.opponentId }); // Ensure opponentId exists
+        if (!opponent) {
+            return res.status(404).json({ message: "Opponent not found." });
+        }
+
+        opponent.role = choice === "seek" ? "hide" : "seek";   // Assign the opposite role to the opponent
+
+        // Save both users
+        await user.save();
+        await opponent.save();
+
+        res.status(200).json({ message: "Roles assigned successfully.", userRole: user.role, opponentRole: opponent.role });
+    } catch (error) {
+        console.error("Error assigning roles:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+};
+
+// ======================== requestAcceptionController: Accept or decline a game request =========================== //
+
+async requestAcceptionController(req, res) {
+    try {
+        const { decision } = req.body; // 'accept' or 'decline'
+        const userId = req.decoded.id;
+
+        const user = await UserModel.findById(userId);
+        if (!user || !user.opponentId) {
+            return res.status(400).json({ message: 'No opponent request found.' });
+        }
+
+        const opponentId = user.opponentId;
+        const opponent = await UserModel.findById(opponentId);
+        if (!opponent) {
+            return res.status(400).json({ message: 'Opponent not found.' });
+        }
+
+        if (decision === 'accept') {
+            user.gameStatus = 'pending-start'; // Game is now waiting for roles
+            opponent.gameStatus = 'pending-start';
+
+            await user.save();
+            await opponent.save();
+
+            // Update game settings to add the opponent
+            let gameSettings = await GameSettings.findOne({ userId });
+
+            if (!gameSettings) {
+                return res.status(400).json({ message: "Game settings not found. Ensure the game settings are created first." });
+            }
+
+            if (!gameSettings.players.includes(opponentId)) {
+                gameSettings.players.push(opponentId);
+                await gameSettings.save();
+            }
+
+            // Notify the original requester
+            await sendNotification(opponentId, userId, "game-request", "Your game request has been accepted!");
+
+            return res.status(200).json({ success: true, message: "Game request accepted!" });
+        } else if (decision === 'decline') {
+            // Reset opponent selection
+            user.selectedOpponent = null;
+            opponent.selectedOpponent = null;
+
+            await user.save();
+            await opponent.save();
+
+            // Notify the original requester
+            await sendNotification(opponentId, userId, "game-request", "Your game request has been declined.");
+
+            return res.status(200).json({ success: true, message: "Game request declined." });
+        } else {
+            return res.status(400).json({ message: 'Invalid decision. Must be "accept" or "decline".' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error.' });
+    }
+}
+
+
+// ================== startGameNowController: Starts the game once both players have confirmed. ================== //
+
+async startGameNowController(req, res) {
+    try {
+        const userId = req.decoded.id;
+
+        //  Fetch the user and their opponent FIRST
+        const user = await UserModel.findById(userId);
+        if (!user || !user.opponentId) {
+            return res.status(400).json({ message: "No opponent selected. Please select an opponent first." });
+        }
+        const opponent = await UserModel.findById(user.opponentId);
+        if (!opponent) {
+            return res.status(400).json({ message: "Selected opponent not found." });
+        }
+
+        let gameSettings = await GameSettings.findOne({
+            players: userId,
+            status: { $ne: "completed" } // Ensure the game is not completed
+        });
+        
+        if (!gameSettings) {
+            if (!user.role || !opponent.role) {                              
+                return res.status(400).json({ message: "Both players must select hide or seek before starting." });
+            }
+            if (user.role === opponent.role) {
+                return res.status(400).json({ message: "Players must choose different roles (one hides, one seeks)." });
+            }
+            if (user.gameStatus === 'in-game' || opponent.gameStatus === 'in-game') {
+                return res.status(400).json({ message: "Game is already in progress." });
+            }
+
+            //  Create new game settings
+            gameSettings = new GameSettings({
+                players: [userId, opponent._id],
+                radius: req.body.range,
+                duration: req.body.duration,
+                interval: req.body.interval,
+                status: 'in-progress',
+                startTime: Date.now(),
+                endTime: Date.now() + req.body.duration * 60000,
+                userId,
+            });
+        } else {        // Update existing game settings
+            gameSettings.status = 'in-progress';
+            gameSettings.startTime = Date.now();
+            gameSettings.endTime = Date.now() + gameSettings.duration * 60000;
+        }
+        await gameSettings.save()
+            .then((savedGame) => console.log("Game saved:", savedGame))
+            .catch((err) => console.error("Error saving game:", err));
+
+        // Corrected: Update game status for both players
+        user.gameStatus = 'in-game';
+        opponent.gameStatus = 'in-game';
+        await user.save();
+        await opponent.save();
+
+        // Send notifications
+        await sendNotification(userId, opponent._id, "game-status", "The game has started!");
+        await sendNotification(opponent._id, userId, "game-status", "The game has started!");
+
+        console.log("Game ID:", gameSettings._id); // Debugging
+        console.log("Game settings before save:", gameSettings);
+        return res.status(200).json({ success: true, message: "Game started!", gameId: gameSettings._id });
+        
+    } catch (error) {
+        console.error("Error starting game:", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+}
+
+// ================================================== Notifiacation  ====================================================== //
+
+
+// ==================================================== Location  ====================================================== //
+async updateLocationController(req, res) {
+    try {
+        const { lat, lng } = req.body;
+        const userId = req.decoded.id;
+
+        if (!lat || !lng) {
+            return res.status(400).json({ success: false, message: "Invalid location data." });
+        }
+        // Update the user's location with a timestamp
+        await UserModel.findByIdAndUpdate(userId, {
+            location: { lat, lng },
+            lastUpdated: new Date() // Store the last update time
+        });
+        res.json({ success: true, message: "Location updated successfully." });
+    } catch (error) {
+        console.error("Error updating location:", error);
+        res.status(500).json({ success: false, message: "Server error.", error });
+    }
+}
+
+// ===================================== Fetch the opponent's live location ================================= //
+
+
+async updateWinLossController(req, res) {
+    try {
+        const { result } = req.body;
+        const userId = req.decoded.id;
+
+        if (!result || !['win', 'loss'].includes(result)) {
+            return res.status(400).json({ success: false, message: "Invalid result. Must be 'win' or 'loss'." });
+        }
+
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // Fetch active game
+        let game = await GameSettings.findOne({
+            players: userId,
+            status: "in-progress"  // Make sure it is active
+        });
+
+        if (!game) {
+            return res.status(404).json({ success: false, message: "No active game found." });
+        }
+
+        // Update user stats
+        if (result === 'win') {
+            user.gamesWon = (user.gamesWon || 0) + 1;
+        } else {
+            user.gamesLost = (user.gamesLost || 0) + 1;
+        }
+        user.gamesPlayed = (user.gamesPlayed || 0) + 1;
+        await user.save();
+
+        // Update game status to 'completed'
+        game.status = "completed";  
+        game.endTime = new Date();  // Set end time
+        await game.save();
+ 
+        return res.status(200).json({
+            success: true,
+            message: `Game result updated: ${result}. Game marked as completed.`,
+            stats: {
+                gamesPlayed: user.gamesPlayed,
+                gamesWon: user.gamesWon,
+                gamesLost: user.gamesLost,
+                gameStatus: game.status
+            }
+        });
+
+    } catch (error) {
+        console.error("Error updating game result:", error);
+        return res.status(500).json({ success: false, message: "Server error." });
+    }
+}
+
+
+}
+
+module.exports = new UserController();
+
+// check why after status is completed and game over the user cannot be used again for playing another game after the user finish playing the first game
+
+// the game is already completed so why can't the user play another game
+
+// check the updateWinLossController so that it can complete the game and user can play another game
+
+
+
+
+
+
+
+{
+    "success": false,
+    "message": "Cast to ObjectId failed for value \"asdf\" (type string) at path \"_id\" for model \"users\""
+}
+
+
+
+
+
+
+

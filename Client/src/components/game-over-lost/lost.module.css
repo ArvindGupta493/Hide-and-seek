@@ -1,0 +1,77 @@
+.home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 97vh;
+    background: linear-gradient(to bottom, white 35%, #141782 0%);
+    text-align: center;
+  }
+
+.logoContainer {
+  margin-bottom: 50px;
+}
+
+.logo {
+  margin-bottom: 20px;
+  width: 300px;
+}
+
+.content {
+  padding: 20px;
+  color: white;
+}
+
+.welcomeText {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: white;
+  font-family: 'Poppins', sans-serif;
+}
+
+.subText {
+  font-size: 16px;
+  margin-bottom: 1px;
+  color: white;
+  font-family: 'Poppins', sans-serif;
+}
+
+.startButton {
+  background-color: #FF0080;
+  color: white;
+  font-size: 18px;  
+  font-weight: bold;
+  border: none;
+  padding: 12px 50px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  margin-top: 20px;
+}
+
+.startButton:hover {
+  background-color: #D6006E;
+  transform: scale(1.05);
+}
+
+.startButton:active {
+  transform: scale(0.98);
+}
+
+.wonstar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* margin-bottom: 20px; */
+}
+
+.wonImage {
+  position: relative;
+  width: 40%;
+  z-index: 1;
+  margin-top: 60px;
+  margin-bottom: 20px;
+}

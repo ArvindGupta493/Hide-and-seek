@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Location on Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 500px; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <h2>Live Location on Map</h2>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>''
+    <script>
+        var map = L.map('map').setView([0, 0], 15); // Initial center & zoom
+
+        // Load OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add a marker with an initial position
+        var marker = L.marker([0, 0]).addTo(map);
+
+        // Function to update location
+        function updateLocation(position) {
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+
+            // Move marker and re-center map
+            marker.setLatLng([lat, lng]);
+            map.setView([lat, lng], 15);
+        }
+
+        // Error handling
+        function handleLocationError(error) {
+            console.error("Error getting location:", error.message);
+            alert("Error getting location: " + error.message);
+        }
+
+        // Get live location updates
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(updateLocation, handleLocationError, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            });
+        } else {
+            alert("Geolocation is not supported by your browser.");
+        }
+    </script>
+
+</body>
+</html>

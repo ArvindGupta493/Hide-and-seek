@@ -1,0 +1,99 @@
+
+/* CSS (countdown.module.css) */
+.countdownContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(to bottom, #0c0c5d, #5d0c5d);
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  width: 80%;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.header p span {
+  font-weight: bold;
+}
+
+.buttonArea{
+  display: flex;
+  justify-content: space-between;
+  width: 90%;
+  font-size: 20px;
+  margin-top: 20px;
+}
+
+.endGameButton {
+  width: 30%;
+  background: linear-gradient(90deg, #ff007f, #d400d4);
+  color: white;
+  padding: 14px;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  margin-top: 15px;
+  box-shadow: 0 6px 12px rgba(255, 0, 127, 0.5);
+  transition: all 0.3s ease-in-out;
+}
+
+.endGameButton:hover {
+  background-color: #ff0055;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 
+
+
+
+.wrapper{
+  background-color: rgb(255, 255, 255);
+  width: 100vw;
+  max-width: 100%;
+  min-height: 100vh;
+}
+
+
+.endButton {
+  width: 30%;
+  background: linear-gradient(90deg, #ff007f, #d400d4);
+  color: white;
+  padding: 14px;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  margin-top: 15px;
+  box-shadow: 0 6px 12px rgba(255, 0, 127, 0.5);
+  transition: all 0.3s ease-in-out;
+}
+
+.endButton:hover {
+  background: linear-gradient(90deg, #d400d4, #ff007f);
+  box-shadow: 0 8px 15px rgba(255, 0, 127, 0.6);
+}
+ */

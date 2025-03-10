@@ -1,0 +1,202 @@
+.Verification {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 95vh;
+    background-color: #fff;
+    padding: 20px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Back Button */
+.backButton {
+    position: absolute;
+    top: 20px;
+    left: 0;
+}
+
+.backButton a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 40px;
+    /* background: linear-gradient(90deg, #ff69b4, #ff1493); */
+    border-radius: 0 25px 25px 0; 
+    box-shadow: 0 4px 10px rgba(255, 20, 147, 0.3);
+    text-decoration: none;
+    padding-left: 10px;
+}
+
+.backButton i {
+    font-size: 30px;
+    color: #c93f88;
+}
+
+.NavbarLogos {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.NavbarLogos img {
+    width: 200px;
+}
+
+.NavbarLogo img {
+    width: 100px;
+}
+
+.heading {
+    font-size: 22px;
+    font-weight: bold;
+    color: #6a0dad;
+    margin: 15px 0;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+}
+.Verification p {
+    font-size: 22px;               
+    font-weight: lighter;           
+    color: #6a0dad;             
+    text-align: center;            
+    margin-bottom: 10px;          
+    letter-spacing: 1px;          
+    font-family: 'Poppins', sans-serif;
+    text-transform: uppercase;     
+}
+
+
+.VerificationForm {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 350px;
+    align-items: center;
+}
+
+.VerificationInput {
+    width: 100%;
+}
+
+.VerificationForm input {
+    width: 100%;
+    padding: 1px;
+    margin: 10px 0;
+    border: none;
+    border-bottom: 2px solid #6a0dad;
+    font-size: 20px;
+    color: #6a0dad;
+    outline: none;
+    background: transparent;
+    transition: border-color 0.3s ease-in-out;
+}
+
+.VerificationForm input::placeholder {
+    color: #6a0dad;
+    opacity: 0.8;
+}
+
+.VerificationForm input:focus {
+    border-bottom: 2px solid #ff1493;
+}
+
+.Verificationbutton {
+    width: 100%;
+    background: linear-gradient(90deg, #ff007f, #d400d4);
+    color: white;
+    padding: 14px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-top: 15px;
+    box-shadow: 0 6px 12px rgba(255, 0, 127, 0.5);
+    transition: all 0.3s ease-in-out;
+}
+
+.Verificationbutton:hover {
+    background: linear-gradient(90deg, #d400d4, #ff007f);
+    box-shadow: 0 8px 15px rgba(255, 0, 127, 0.6);
+}
+
+.already {
+    margin-top: 20px;
+    font-size: 14px;
+    text-align: center;
+    color: #6a0dad;
+}
+
+.already p {
+    margin: 5px 0;
+}
+
+.already a {
+    color: #ff1493;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease-in-out;
+}
+
+.already a:hover {
+    color: #6a0dad;
+}
+
+
+
+
+
+.OtpInput {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.otpBox {
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    font-size: 24px;
+    border: 2px solid #6a0dad;
+    /* border-radius: 8px; */
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.otpBox:focus {
+    border-color: #ff1493;
+    box-shadow: 0 0 8px rgba(255, 20, 147, 0.5);
+}
+
+
+/* Responsive Design */
+@media screen and (max-width: 480px) {
+    .NavbarLogos img {
+        width: 200px;
+    }
+
+    .heading {
+        font-size: 20px;
+    }
+
+    .VerificationForm {
+
+        width: 90%;
+    }
+
+    button {
+        font-size: 16px;
+        padding: 12px;
+    }
+}
+
+
+
+
+
+

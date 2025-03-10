@@ -1,0 +1,74 @@
+.container {
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 60px;
+    background-color: white;
+    /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); */
+    border-radius: 15px;
+  }
+  
+  .title {
+    margin-left: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 25px;
+    color: #333;
+  }
+  
+  .message {
+    color: green;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .error {
+    color: red;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .adminInfo {
+    margin-bottom: 20px;
+  }
+  
+  .adminInfo p {
+    font-size: 16px;
+    margin: 5px 0;
+    color: #555;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+  }
+  
+  .input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  .button {
+    background-color: #0f61e6;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .button:hover {
+    background-color: #0056b3;
+  }
+  

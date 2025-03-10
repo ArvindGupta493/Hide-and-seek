@@ -1,0 +1,78 @@
+.historyContainer {
+    width: 100%;
+    max-width: 90%;
+    margin: auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    /* box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); */
+    text-align: center;
+  }
+
+  .logoContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: -10px;
+  }
+  
+  .logo {
+    width: 200px;
+    height: auto;
+    background-color: white;
+    border-radius: 10px;
+    padding: 5px;
+  }
+  
+  h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .gameTable {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .gameTable th, .gameTable td {
+    padding: 10px;
+    border: 1px solid #ddd;
+  }
+  
+  .gameTable th {
+    background: #f4f4f4;
+  }
+  
+  .winRow {
+    background: #e0ffe0;
+  }
+  
+  .loseRow {
+    background: #ffe0e0;
+  }
+  
+  .winText {
+    color: green;
+    font-weight: bold;
+  }
+  
+  .loseText {
+    color: red;
+    font-weight: bold;
+  }
+  
+
+  .backButton {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    transition: background 0.3s ease-in-out;
+    margin-left: 0px;
+  }
+  
