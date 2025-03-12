@@ -229,7 +229,7 @@ async getUserListController(req, res) {
 
 async selectPlayerController(req, res) {
     try {
-        const { opponentId, opponentUsername, duration, interval } = req.body;
+        const { opponentId, opponentUsername } = req.body;
         const userId = req.decoded.id;
 
         if (!opponentId && !opponentUsername) {
@@ -256,10 +256,6 @@ async selectPlayerController(req, res) {
         user.opponentId = opponent._id;
         opponent.opponentId = userId;
 
-        // Save game settings
-        user.gameSettings = { duration, interval };
-        opponent.gameSettings = { duration, interval };
-
         await user.save();
         await opponent.save();
 
@@ -267,7 +263,6 @@ async selectPlayerController(req, res) {
             success: true, 
             message: "Opponent selected and game settings saved successfully.", 
             selectedOpponent: { id: opponent._id, username: opponent.username },
-            gameSettings: { duration, interval }
         });
 
     } catch (error) {
@@ -277,6 +272,10 @@ async selectPlayerController(req, res) {
 }
 
 // ================================ Save game settings with userId and opponentId =============================== //
+
+// update this so that the saveGameSettingsController will take the opponentId, opponentUsername, duration, interval in and give a unque game id and can be used later and the same user can play the game later but with different unique id
+
+
 async saveGameSettingsController(req, res) {
     try {
         const userId = req.decoded.id;
@@ -312,23 +311,23 @@ async saveGameSettingsController(req, res) {
             return res.status(400).json({ success: false, message: "Opponent not found." });
         }
 
-        const activeGame = await GameSettings.findOne({
-            players: { $in: [userId, opponentId] },
-            status: { $ne: "completed" },
-        });
+        // const activeGame = await GameSettings.findOne({
+        //     players: { $in: [userId, opponentId] },
+        //     status: { $ne: "completed" },
+        // });
 
-        if (activeGame) {
-            return res.status(400).json({ message: "One of the users is already in an active game. Finish the current game before starting a new one." });
-        }
+        // if (activeGame) {
+        //     return res.status(400).json({ message: "One of the users is already in an active game. Finish the current game before starting a new one." });
+        // }
 
         // Check if the user already has game settings
-        const existingSettings = await GameSettings.findOne({ userId });
-        if (existingSettings) {
-            return res.status(400).json({
-                success: false,
-                message: "Game settings already exist for this user. Please update or start a new game."
-            });
-        }
+        // const existingSettings = await GameSettings.findOne({ userId });
+        // if (existingSettings) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: "Game settings already exist for this user. Please update or start a new game."
+        //     });
+        // }
 
         // Generate a unique gameId
         const { v4: uuidv4 } = require("uuid");
@@ -336,7 +335,7 @@ async saveGameSettingsController(req, res) {
 
         // Create and save game settings
         const gameSettings = new GameSettings({
-            gameId,
+            gameId, 
             userId,
             duration,
             interval,
@@ -361,7 +360,7 @@ async saveGameSettingsController(req, res) {
     }
 }
 
-
+// check why the game is not taking place with same userid which should have happen beacuse when ever user whats to play the new game the same user id can be user but gameid every time will be different so that with user id duplicate key problem will not happen 
 
 // async  saveGameSettingsController(req, res) {
 //     try {
@@ -635,38 +634,29 @@ async getUserLocationController(req, res) {
     try {
         const userId = req.decoded.id;
 
-        // Find an active game where the user is a player
-        const game = await GameSettings.findOne({
-            // players: new mongoose.Types.ObjectId(userId),
-            gameStatus: "active"
-        }).populate("players", "location lastUpdated"); // Fetch location and last update time
+        const user = await UserModel.findById(userId).select("location");
 
-        if (!game) {
-            return res.status(404).json({ success: false, message: "No active game session found." });
+        if (!user || !user.location || !user.location.coordinates.length) {
+            return res.status(404).json({ success: false, message: "Location not available." });
         }
 
-        // Find the opponent
-        const opponent = game.players.find(player => player._id.toString() !== userId);
-
-        if (!opponent || !opponent.location || !opponent.location.lat || !opponent.location.lng) {
-            return res.status(404).json({ success: false, message: "Opponent location not available." });
-        }
-
-        return res.json({ 
-            success: true, 
-            message: "Opponent location retrieved.", 
-            location: opponent.location, 
-            lastUpdated: opponent.lastUpdated 
+        return res.json({
+            success: true,
+            location: user.location.coordinates // [longitude, latitude]
         });
 
     } catch (error) {
-        console.error("Error fetching opponent's location:", error);
+        console.error("Error fetching location:", error);
         return res.status(500).json({ success: false, message: "Server error.", error });
     }
 }
 
 //  apply the game lost ,won and total in the game play of the user 
+
 async updateWinLossController(req, res) {
+    const session = await mongoose.startSession(); // Start transaction
+    session.startTransaction();
+
     try {
         const { result } = req.body;
         const userId = req.decoded.id;
@@ -674,8 +664,8 @@ async updateWinLossController(req, res) {
         if (!result || !['win', 'loss'].includes(result)) {
             return res.status(400).json({ success: false, message: "Invalid result. Must be 'win' or 'loss'." });
         }
-        
-        const user = await UserModel.findById(userId);
+
+        const user = await UserModel.findById(userId).session(session);
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found." });
         }
@@ -683,43 +673,78 @@ async updateWinLossController(req, res) {
         // Fetch active game
         let game = await GameSettings.findOne({
             players: userId,
-            status: "in-progress"  // Make sure it is active
-        });
+            status: "in-progress"
+        }).session(session);
 
         if (!game) {
             return res.status(404).json({ success: false, message: "No active game found." });
         }
 
-        // Update user stats
+        // Find the opponent
+        const opponentId = game.players.find(id => id.toString() !== userId.toString());
+        const opponent = await UserModel.findById(opponentId).session(session);
+
+        if (!opponent) {
+            return res.status(404).json({ success: false, message: "Opponent not found." });
+        }
+
+        // Update user & opponent stats
         if (result === 'win') {
             user.gamesWon = (user.gamesWon || 0) + 1;
+            opponent.gamesLost = (opponent.gamesLost || 0) + 1;
+            game.winner = userId;  
         } else {
             user.gamesLost = (user.gamesLost || 0) + 1;
+            opponent.gamesWon = (opponent.gamesWon || 0) + 1;
+            game.winner = opponentId;  
         }
-        user.gamesPlayed = (user.gamesPlayed || 0) + 1;
-        await user.save();
 
+        // Increment total games played for both players
+        user.gamesPlayed = (user.gamesPlayed || 0) + 1;
+        opponent.gamesPlayed = (opponent.gamesPlayed || 0) + 1;
+
+        // Save user, opponent, and game updates
+        await user.save({ session });
+        await opponent.save({ session });
+        
         // Update game status to 'completed'
         game.status = "completed";  
-        game.endTime = new Date();  // Set end time
-        await game.save();
- 
+        game.endTime = new Date();
+        await game.save({ session });
+
+        // Commit transaction
+        await session.commitTransaction();
+        session.endSession();
+
         return res.status(200).json({
             success: true,
             message: `Game result updated: ${result}. Game marked as completed.`,
             stats: {
-                gamesPlayed: user.gamesPlayed,
-                gamesWon: user.gamesWon,
-                gamesLost: user.gamesLost,
+                user: {
+                    gamesPlayed: user.gamesPlayed,
+                    gamesWon: user.gamesWon,
+                    gamesLost: user.gamesLost
+                },
+                opponent: {
+                    gamesPlayed: opponent.gamesPlayed,
+                    gamesWon: opponent.gamesWon,
+                    gamesLost: opponent.gamesLost
+                },
                 gameStatus: game.status
             }
         });
 
     } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
         console.error("Error updating game result:", error);
         return res.status(500).json({ success: false, message: "Server error." });
     }
 }
+
+
+
+// update this so that not only the user get the total game palyed ,loss & won but also the opponent will be saved 
 
 async getGameHistoryController(req, res) {
     try {
@@ -742,7 +767,11 @@ async getGameHistoryController(req, res) {
 
             return {
                 opponentName: opponent ? opponent.username : "Unknown",
-                result: game.winner?.toString() === userId.toString() ? "Win" : "Loss", // FIXED
+                result: game.winner && game.winner.toString() === userId.toString() 
+                        ? "Win" 
+                        : game.winner 
+                        ? "Loss" 
+                        : "Pending",  // Updated from "Unknown" to "Pending"
                 gameDate: game.endTime,
             };
         }));
@@ -756,7 +785,7 @@ async getGameHistoryController(req, res) {
 }
 
 
-
+// update the code and also check why the first game is showing th ethe result properly and remaining game is showing unknown result
 
 
 

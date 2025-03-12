@@ -905,3 +905,583 @@ async startGame(req, res) {
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+create mode 100644 startgame.js
+arvind@arvind-ThinkPad-T440:~/hide and seek 2$ git branch -M main
+arvind@arvind-ThinkPad-T440:~/hide and seek 2$ git remote add origin https://github.com/ArvindGupta493/Hide-and-seek.git
+arvind@arvind-ThinkPad-T440:~/hide and seek 2$ git push -u origin main
+
+Enumerating objects: 6288, done.
+Counting objects: 100% (6288/6288), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (6026/6026), done.
+Writing objects: 100% (6288/6288), 14.44 MiB | 660.00 KiB/s, done.
+Total 6288 (delta 1070), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (1070/1070), done.
+To https://github.com/ArvindGupta493/Hide-and-seek.git
+ * [new branch]      main -> main
+branch 'main' set up to track 'origin/main'.
+
+arvind@arvind-ThinkPad-T440:~/hide and seek 2$ git fetch
+From https://github.com/ArvindGupta493/Hide-and-seek
+ * [new branch]      development -> origin/development
+
+arvind@arvind-ThinkPad-T440:~/hide and seek 2$ git commit -m 'testing git'
+[development 063c12b] testing git
+ 1 file changed, 1 insertion(+)
+
+arvind@arvind-ThinkPad-T440:~/hide and seek 2$ git push origin development 
+Enumerating objects: 13, done.
+Counting objects: 100% (13/13), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (7/7), 561 bytes | 561.00 KiB/s, done.
+Total 7 (delta 6), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (6/6), completed with 6 local objects.
+To https://github.com/ArvindGupta493/Hide-and-seek.git
+   5f0ffcb..063c12b  development -> development
+   
+arvind@arvind-ThinkPad-T440:~/hide and seek 2$ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import style from "./game-in-progress.module.css";
+import { toast } from "react-toastify";
+import { GoogleMap, Circle, LoadScript } from "@react-google-maps/api";
+import axios from "axios";
+
+const mapContainerStyle = {
+  width: "100%",
+  height: "400px",
+  borderRadius: "15px",
+};
+
+const CountdownPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // State variables
+  const [gameDuration, setGameDuration] = useState(() => parseInt(localStorage.getItem("gameDuration")) || null);
+  const [intervalDuration, setIntervalDuration] = useState(() => parseInt(localStorage.getItem("intervalDuration")) || 0);
+  const [remainingClicks, setRemainingClicks] = useState(0);
+  const [userLocation, setUserLocation] = useState({ lat: 0, lng: 0 });
+
+  // Refs for timers
+  const gameTimerRef = useRef(null);
+  const intervalRef = useRef(null);
+  const isPausedRef = useRef(false); 
+
+  // Fetch user location from backend
+  useEffect(() => {
+    const fetchUserLocation = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/user/get-user-location", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+
+        if (response.data.success && response.data.location) {
+          setUserLocation({
+            lat: response.data.location.lat,
+            lng: response.data.location.lng,
+          });
+        } else {
+          toast.error("Failed to fetch user location.");
+        }
+      } catch (error) {
+        toast.error("Error fetching user location.");
+        console.error("Error fetching user location:", error);
+      }
+    };
+
+    fetchUserLocation();
+    const interval = setInterval(fetchUserLocation, 30000); // Refresh location every 30s
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className={style.countdownContainer}>
+      <div className={style.header}>
+        <p>
+          Game Duration<br />
+          <span>
+            {gameDuration !== null
+              ? `${Math.floor(gameDuration / 60)}:${(gameDuration % 60)
+                  .toString()
+                  .padStart(2, "0")} left`
+              : "Loading..."}
+          </span>
+        </p>
+      </div>
+
+      {/* Google Map with Live Location */}
+      <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
+        <GoogleMap mapContainerStyle={mapContainerStyle} center={userLocation} zoom={15}>
+          <Circle
+            center={userLocation}
+            radius={500}
+            options={{ strokeColor: "#00ff00", fillColor: "#00ff0050" }}
+          />
+        </GoogleMap>
+      </LoadScript>
+
+      <div className={style.buttonArea}>
+        <button className={style.endGameButton} onClick={() => navigate("/confirmation")}>
+          END GAME
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default CountdownPage;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import style from "./game-in-progress.module.css";
+import { toast } from "react-toastify";
+import { GoogleMap, Circle, useLoadScript } from "@react-google-maps/api";
+
+import axios from "axios";
+
+const mapContainerStyle = {
+  width: "100%",
+  height: "400px",
+  borderRadius: "15px",
+};
+
+const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY"; // Replace with your actual API key
+
+const CountdownPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // State variables
+  const [gameDuration, setGameDuration] = useState(() => parseInt(localStorage.getItem("gameDuration")) || null);
+  const [intervalDuration, setIntervalDuration] = useState(() => parseInt(localStorage.getItem("intervalDuration")) || 0);
+  const [remainingClicks, setRemainingClicks] = useState(0);
+  const [userLocation, setUserLocation] = useState(null);
+
+  // Refs for timers
+  const gameTimerRef = useRef(null);
+  const intervalRef = useRef(null);
+  const isPausedRef = useRef(false);
+
+  // Fetch game settings on mount
+  useEffect(() => {
+    const fetchGameSettings = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/user/duration-and-intervals", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+
+        if (response.data.success) {
+          const { duration, interval } = response.data.settings;
+          setGameDuration((prev) => prev ?? duration * 60);
+          setRemainingClicks(interval);
+        } else {
+          toast.error("Failed to fetch game settings.");
+        }
+      } catch (error) {
+        toast.error("Error fetching game settings.");
+        console.error("Error fetching game settings:", error);
+      }
+    };
+
+    fetchGameSettings();
+  }, []);
+
+  // Save timer values to localStorage
+  useEffect(() => {
+    if (gameDuration !== null) localStorage.setItem("gameDuration", gameDuration);
+    localStorage.setItem("intervalDuration", intervalDuration);
+  }, [gameDuration, intervalDuration]);
+
+  // Update user location
+  useEffect(() => {
+    const updateLocation = async () => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation({ lat: latitude, lng: longitude });
+
+            try {
+              await axios.post("http://localhost:5000/api/user/update-location", {
+                lat: latitude,
+                lng: longitude,
+              }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+              });
+            } catch (error) {
+              console.error("Error updating location:", error);
+            }
+          },
+          (error) => {
+            console.error("Error getting location:", error);
+            toast.error("Failed to get live location.");
+          },
+          { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+        );
+      }
+    };
+
+    updateLocation();
+    const interval = setInterval(updateLocation, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handle game countdown
+  useEffect(() => {
+    if (isPausedRef.current) return;
+
+    if (gameDuration > 0) {
+      gameTimerRef.current = setTimeout(() => setGameDuration((prev) => prev - 1), 1000);
+    } else if (gameDuration === 0) {
+      clearTimeout(gameTimerRef.current);
+      toast.success("Game Over!");
+      setTimeout(() => navigate("/won"), 2000);
+    }
+
+    return () => clearTimeout(gameTimerRef.current);
+  }, [gameDuration, navigate]);
+
+  // Handle interval countdown
+  useEffect(() => {
+    if (isPausedRef.current) return;
+
+    if (intervalDuration > 0) {
+      intervalRef.current = setTimeout(() => setIntervalDuration((prev) => prev - 1), 1000);
+    }
+
+    return () => clearTimeout(intervalRef.current);
+  }, [intervalDuration]);
+
+  // Handle pause when navigating to confirmation
+  useEffect(() => {
+    if (location.pathname === "/confirmation") {
+      isPausedRef.current = true;
+      clearTimeout(gameTimerRef.current);
+      clearTimeout(intervalRef.current);
+    } else {
+      isPausedRef.current = false;
+    }
+  }, [location.pathname]);
+
+  // Handle "END GAME" button
+  const handleEndGame = () => {
+    toast.info("Game Paused");
+    clearTimeout(gameTimerRef.current);
+    clearTimeout(intervalRef.current);
+    navigate("/confirmation");
+  };
+
+  // Handle interval button click
+  const handleIntervalClick = () => {
+    if (remainingClicks > 0 && intervalDuration === 0) {
+      setIntervalDuration(120);
+      setRemainingClicks((prev) => prev - 1);
+      toast.info(`You can start interval ${remainingClicks - 1} more time(s).`);
+    }
+  };
+
+  // Load Google Maps
+  const { isLoaded } = useLoadScript({ googleMapsApiKey: GOOGLE_MAPS_API_KEY });
+  
+
+
+   
+  
+  return (
+    <div className={style.countdownContainer}>
+      <div className={style.header}>
+        <p>Game Duration<br />
+          <span>{gameDuration !== null ? `${Math.floor(gameDuration / 60)}:${(gameDuration % 60).toString().padStart(2, "0")} left` : "Loading..."}</span>
+        </p>
+        <p>Interval Duration {remainingClicks > 0 ? `(${remainingClicks} left)` : "(Disabled)"}<br />
+          <span>{Math.floor(intervalDuration / 60)}:{(intervalDuration % 60).toString().padStart(2, "0")} left</span>
+        </p>
+      </div>
+
+      <>
+      {isLoaded && userLocation ? (
+        <GoogleMap mapContainerStyle={mapContainerStyle} center={userLocation} zoom={15}>
+          <Circle center={userLocation} radius={500} options={{ strokeColor: "#00ff00", fillColor: "#00ff0050" }} />
+        </GoogleMap>
+      ) : (
+        <p>Loading Map...</p>
+      )}
+    </>
+  
+
+      <div className={style.buttonArea}>
+        <button className={style.endGameButton} onClick={handleEndGame}>END GAME</button>
+        <button className={style.endGameButton} onClick={handleIntervalClick} disabled={remainingClicks === 0 || intervalDuration > 0}>
+          Interval {remainingClicks > 0}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default CountdownPage;
