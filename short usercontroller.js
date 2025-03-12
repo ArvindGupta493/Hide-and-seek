@@ -526,7 +526,7 @@ async startGame(req, res) {
         });
 
         await newGame.save();
-        this is the original userController for the whole game so check where it has gone wrong so the user can not play the another game as the user should be able to play other games also with different gameId 
+        // this is the original userController for the whole game so check where it has gone wrong so the user can not play the another game as the user should be able to play other games also with different gameId 
 
         // Mark users as in-game
         await UserModel.updateMany(

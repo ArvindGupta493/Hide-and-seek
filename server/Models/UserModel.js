@@ -18,9 +18,9 @@ const UserSchema = new mongoose.Schema({
     coordinates: { type: [Number], default: [0, 0] }, // [longitude, latitude]
   },   
   role: { type: String, enum: ['hide', 'seek'], default: null },
-  game_won:{ type: String, default: "0" },
-  game_lost:{ type: String, default: "0" },
-  Total_game:{ type: String, default: "0" },
+  gamesWon: { type: Number, default: 0 },  // Check if this field exists
+  gamesLost: { type: Number, default: 0 },  // Check if this field exists
+  gamesPlayed:{ type: Number, default: 0 },
   isAvailable: { type: Boolean, default: true },
   opponentId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', default: null } 
 }, { timestamps: true });

@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import style from "./game-in-progress.module.css";
 import { toast } from "react-toastify";
-import { GoogleMap, Circle, LoadScript } from "@react-google-maps/api";
+import { GoogleMap, Circle, useLoadScript } from "@react-google-maps/api";
+
 import axios from "axios";
 
 const mapContainerStyle = {
@@ -11,38 +12,34 @@ const mapContainerStyle = {
   borderRadius: "15px",
 };
 
+const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY"; // Replace with your actual API key
+
 const CountdownPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   // State variables
-  const [gameDuration, setGameDuration] = useState(() => {
-    return parseInt(localStorage.getItem("gameDuration")) || null;
-  });
-
-  const [intervalDuration, setIntervalDuration] = useState(() => {
-    return parseInt(localStorage.getItem("intervalDuration")) || 0;
-  });
-
+  const [gameDuration, setGameDuration] = useState(() => parseInt(localStorage.getItem("gameDuration")) || null);
+  const [intervalDuration, setIntervalDuration] = useState(() => parseInt(localStorage.getItem("intervalDuration")) || 0);
   const [remainingClicks, setRemainingClicks] = useState(0);
-  const [userLocation, setUserLocation] = useState({ lat: 0, lng: 0 });
+  const [userLocation, setUserLocation] = useState(null);
 
   // Refs for timers
   const gameTimerRef = useRef(null);
   const intervalRef = useRef(null);
-  const isPausedRef = useRef(false); // Track if the timers are paused
+  const isPausedRef = useRef(false);
 
   // Fetch game settings on mount
   useEffect(() => {
     const fetchGameSettings = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/user/duration-and-interval", {
+        const response = await axios.get("http://localhost:5000/api/user/duration-and-intervals", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
-  
+
         if (response.data.success) {
           const { duration, interval } = response.data.settings;
-          setGameDuration((prev) => prev ?? duration * 60); // Only update if it's null
+          setGameDuration((prev) => prev ?? duration * 60);
           setRemainingClicks(interval);
         } else {
           toast.error("Failed to fetch game settings.");
@@ -52,16 +49,13 @@ const CountdownPage = () => {
         console.error("Error fetching game settings:", error);
       }
     };
-  
+
     fetchGameSettings();
   }, []);
-  
 
   // Save timer values to localStorage
   useEffect(() => {
-    if (gameDuration !== null) {
-      localStorage.setItem("gameDuration", gameDuration);
-    }
+    if (gameDuration !== null) localStorage.setItem("gameDuration", gameDuration);
     localStorage.setItem("intervalDuration", intervalDuration);
   }, [gameDuration, intervalDuration]);
 
@@ -69,45 +63,34 @@ const CountdownPage = () => {
   useEffect(() => {
     const updateLocation = async () => {
       if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const { latitude, longitude } = position.coords;
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation({ lat: latitude, lng: longitude });
 
-          await fetch("http://localhost:5000/api/user/update-location", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify({ lat: latitude, lng: longitude }),
-          });
-        });
+            try {
+              await axios.post("http://localhost:5000/api/user/update-location", {
+                lat: latitude,
+                lng: longitude,
+              }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+              });
+            } catch (error) {
+              console.error("Error updating location:", error);
+            }
+          },
+          (error) => {
+            console.error("Error getting location:", error);
+            toast.error("Failed to get live location.");
+          },
+          { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+        );
       }
     };
 
     updateLocation();
     const interval = setInterval(updateLocation, 30000);
     return () => clearInterval(interval);
-  }, []);
-
-  // Track live location
-  useEffect(() => {
-    if (navigator.geolocation) {
-      const watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          toast.error("Failed to get live location.");
-        },
-        { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
-      );
-
-      return () => navigator.geolocation.clearWatch(watchId);
-    }
   }, []);
 
   // Handle game countdown
@@ -164,49 +147,39 @@ const CountdownPage = () => {
     }
   };
 
+  // Load Google Maps
+  const { isLoaded } = useLoadScript({ googleMapsApiKey: GOOGLE_MAPS_API_KEY });
+  
+
+
+   
+  
   return (
     <div className={style.countdownContainer}>
       <div className={style.header}>
-        <p>
-          Game Duration<br />
-          <span>
-            {gameDuration !== null
-              ? `${Math.floor(gameDuration / 60)}:${(gameDuration % 60)
-                  .toString()
-                  .padStart(2, "0")} left`
-              : "Loading..."}
-          </span>
+        <p>Game Duration<br />
+          <span>{gameDuration !== null ? `${Math.floor(gameDuration / 60)}:${(gameDuration % 60).toString().padStart(2, "0")} left` : "Loading..."}</span>
         </p>
-        <p>
-          Interval Duration {remainingClicks > 0 ? `(${remainingClicks} left)` : "(Disabled)"}<br />
-          <span>
-            {Math.floor(intervalDuration / 60)}:{(intervalDuration % 60).toString().padStart(2, "0")} left
-          </span>
+        <p>Interval Duration {remainingClicks > 0 ? `(${remainingClicks} left)` : "(Disabled)"}<br />
+          <span>{Math.floor(intervalDuration / 60)}:{(intervalDuration % 60).toString().padStart(2, "0")} left</span>
         </p>
       </div>
 
-      {/* Google Map with Live Location */}
-      <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
+      <>
+      {isLoaded && userLocation ? (
         <GoogleMap mapContainerStyle={mapContainerStyle} center={userLocation} zoom={15}>
-          <Circle
-            center={userLocation}
-            radius={500}
-            options={{ strokeColor: "#00ff00", fillColor: "#00ff0050" }}
-          />
+          <Circle center={userLocation} radius={500} options={{ strokeColor: "#00ff00", fillColor: "#00ff0050" }} />
         </GoogleMap>
-      </LoadScript>
+      ) : (
+        <p>Loading Map...</p>
+      )}
+    </>
+  
 
       <div className={style.buttonArea}>
-        <button className={style.endGameButton} onClick={handleEndGame}>
-          END GAME
-        </button>
-        <button
-          className={style.endGameButton}
-          onClick={handleIntervalClick}
-          disabled={remainingClicks === 0 || intervalDuration > 0}
-        >
-          Interval {remainingClicks > 0 }
-          {/* Interval {remainingClicks > 0 ? `(${remainingClicks} left)` : "(Disabled)"} */}
+        <button className={style.endGameButton} onClick={handleEndGame}>END GAME</button>
+        <button className={style.endGameButton} onClick={handleIntervalClick} disabled={remainingClicks === 0 || intervalDuration > 0}>
+          Interval {remainingClicks > 0}
         </button>
       </div>
     </div>
@@ -217,9 +190,12 @@ export default CountdownPage;
 
 
 
+// udpate this code so that it can show the map properly as that current map is not working properly and showing this 
+// "Sorry! Something went wrong.
+// This page didn't load Google Maps correctly. See the JavaScript console for technical details."
+// so update this code and when the location is posted then show that locaton in the map 
 
-
-
+// update the map method if necessary
 
 
 
