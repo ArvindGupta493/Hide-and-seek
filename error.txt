@@ -1485,3 +1485,995 @@ const CountdownPage = () => {
 };
 
 export default CountdownPage;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import style from "./game-in-progress.module.css";
+import { toast } from "react-toastify";
+import { GoogleMap, Circle, useLoadScript } from "@react-google-maps/api";
+import axios from "axios";
+
+const mapContainerStyle = {
+  width: "100%",
+  height: "400px",
+  borderRadius: "15px",
+};
+
+const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY"; // Ensure this is correct
+
+const CountdownPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // State variables
+  const [gameDuration, setGameDuration] = useState(null);
+  const [intervalDuration, setIntervalDuration] = useState(0);
+  const [remainingClicks, setRemainingClicks] = useState(0);
+  const [userLocation, setUserLocation] = useState(null);
+  
+  // Load Google Maps
+  const { isLoaded } = useLoadScript({ googleMapsApiKey: GOOGLE_MAPS_API_KEY });
+
+  // Fetch game settings and user location
+  useEffect(() => {
+    const fetchGameData = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/user/duration-and-intervals", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+
+        if (response.data.success) {
+          const { duration, interval, location } = response.data.settings;
+          setGameDuration(duration * 60);
+          setRemainingClicks(interval);
+          
+          if (location) {
+            setUserLocation({ lat: location.lat, lng: location.lng });
+          }
+        } else {
+          toast.error("Failed to fetch game settings.");
+        }
+      } catch (error) {
+        toast.error("Error fetching game settings.");
+        console.error("Error fetching game settings:", error);
+      }
+    };
+
+    fetchGameData();
+  }, []);
+
+  // Update user location periodically
+  useEffect(() => {
+    const updateLocation = async () => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation({ lat: latitude, lng: longitude });
+
+            try {
+              await axios.post("http://localhost:5000/api/user/update-location", {
+                lat: latitude,
+                lng: longitude,
+              }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+              });
+            } catch (error) {
+              console.error("Error updating location:", error);
+            }
+          },
+          (error) => {
+            console.error("Error getting location:", error);
+            toast.error("Failed to get live location.");
+          },
+          { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+        );
+      }
+    };
+
+    updateLocation();
+    const interval = setInterval(updateLocation, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className={style.countdownContainer}>
+      <div className={style.header}>
+        <p>Game Duration<br />
+          <span>{gameDuration !== null ? `${Math.floor(gameDuration / 60)}:${(gameDuration % 60).toString().padStart(2, "0")} left` : "Loading..."}</span>
+        </p>
+        <p>Interval Duration {remainingClicks > 0 ? `(${remainingClicks} left)` : "(Disabled)"}<br />
+          <span>{Math.floor(intervalDuration / 60)}:{(intervalDuration % 60).toString().padStart(2, "0")} left</span>
+        </p>
+      </div>
+
+      {isLoaded && userLocation ? (
+        <GoogleMap mapContainerStyle={mapContainerStyle} center={userLocation} zoom={15}>
+          <Circle center={userLocation} radius={500} options={{ strokeColor: "#00ff00", fillColor: "#00ff0050" }} />
+        </GoogleMap>
+      ) : (
+        <p>Loading Map...</p>
+      )}
+    </div>
+  );
+};
+
+export default CountdownPage;
+
+
+
+
+
+
+need to update setting section  as to when clicked setting it password change section and when admin button is clcked then the profile view section is opened where the details of admin is shown 
+and we can go to the profile section dirrectly from the settings as the in navbar their will be "profile / change password" these two buttons will be present to change the page  means in admin it will go to settings but it will open profile section and if the settings or changepassword button is clicked it will slide to the change password page
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { useEffect, useState } from "react";
+import axios from "axios";
+import style from "./settings.module.css";
+import { toast } from "react-toastify";
+
+const Settings = () => {
+  const [admin, setAdmin] = useState(null);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  // const [confirmPassword, setConfirmPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get("/api/admin/get-profile", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        setAdmin(response.data.data);
+      } catch (error) {
+        setError(error.response?.data?.message || "Failed to load profile.");
+      }
+    };
+  
+    fetchProfile();
+  }, []);
+  
+
+  const handlePasswordUpdate = async (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (!oldPassword || !newPassword 
+      // || !confirmPassword
+    ) {
+      setError("All fields are required.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError("New password must be at least 8 characters long.");
+      return;
+    }
+    // if (newPassword !== confirmPassword) {
+    //   setError("New passwords do not match.");
+    //   return;
+    // }
+
+    try {
+      const response = await axios.post(
+        "/api/admin/update-password",
+        { old_password: oldPassword, new_password: newPassword },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+
+      setMessage(response.data.message);
+      setError("");
+      setOldPassword("");
+      setNewPassword("");
+      toast.success("Password updated Successfully. ");
+  
+    } catch (err) {
+      setError(err.response?.data?.message || "Error updating password.");
+      toast.error("Password not updated ");
+
+    }
+  };
+
+  return (
+    <div className={style.containers}>
+      <h2 className={style.title}>Admin Settings</h2>
+      <div className={style.container}>
+
+      {error && <p className={style.error}>{error}</p>}
+      {message && <p className={style.message}>{message}</p>}
+
+      {admin && (
+        <div className={style.adminInfo}>
+          <p><strong>Name:</strong> {admin.name}</p>
+          <p><strong>Email:</strong> {admin.email}</p>
+        </div>
+      )}
+
+      <h3 className={style.title}>Change Password</h3>
+      <form onSubmit={handlePasswordUpdate} className={style.form}>
+        <input
+          type="password"
+          placeholder="Old Password"
+          className={style.input}
+          value={oldPassword}
+          onChange={(e) => setOldPassword(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="New Password"
+          className={style.input}
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+        />
+        {/* <input
+          type="password"
+          placeholder="Confirm New Password"
+          className={style.input}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        /> */}
+        <button type="submit" className={style.button}>
+          Update Password
+        </button>
+      </form>
+    </div>
+    </div>
+  );
+};
+
+export default Settings;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+
+import { Navigate, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import Users from "../users/Users";
+import Notifications from "../notifications/Notifications";
+import Settings from "../settings/Settings";
+import Dashboard from "../Dashboard/Dashboard";
+import styles from "./AdminDashboard.module.css";
+import defaultAvatar from "../../assets/avatar.jpg"; // Import the image
+import logo from "../../assets/logo.png"; // Import the logo
+
+const isAdmin = () => {
+  return localStorage.getItem("role") === "admin";
+};
+
+const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const [section, setSection] = useState(1);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const adminName = localStorage.getItem("adminName") || "Admin";
+  const adminImage = localStorage.getItem("adminImage") || defaultAvatar; // Use imported avatar as default
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
+  if (!isAdmin()) return <Navigate to="/login" replace />;
+
+  const handleSectionChange = (num) => {
+    setSection(num);
+  };
+
+  return (
+    <div className={styles.dashboardContainer}>
+      {/* Navbar */}
+      <header className={styles.navbar}>
+        <div className={styles.logoContainer}>
+          <img src={logo} alt="Hide & Seek Logo" className={styles.logo} />
+          <span className={styles.adminPanelText}>Admin Panel</span>
+        </div>
+
+        <div className={styles.profileContainer} onClick={() => setShowDropdown(!showDropdown)}>
+          <img src={adminImage} alt="Admin" className={styles.profileImage} />
+          
+          {showDropdown && (
+            <div className={styles.dropdownMenu}>
+              {/* <p className={styles.adminName}>{adminName}</p> */}
+              <button onClick={() => handleSectionChange(1)} className={styles.adminName}>{adminName}</button>
+              <button onClick={handleLogout} className={styles.logoutButton}>Logout</button>
+            </div>
+          )}
+        </div>
+      </header>
+ 
+      {/* Sidebar */}
+      <aside className={styles.sidebar}>
+        <nav>
+          <ul className={styles.sidebarMenu}>
+            <li><div onClick={() => handleSectionChange(1)} className={styles.sidebarLink}>Dashboard</div></li>
+            <li><div onClick={() => handleSectionChange(2)} className={styles.sidebarLink}>Manage Users</div></li>
+            <li><div onClick={() => handleSectionChange(3)} className={styles.sidebarLink}>Notifications</div></li>
+            <li><div onClick={() => handleSectionChange(4)} className={styles.sidebarLink}>Settings</div></li>
+            <li><button onClick={handleLogout} className={styles.logoutButton}>Logout</button></li>
+          </ul>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className={styles.mainContent}>
+        {section === 1 && <Dashboard />}
+        {section === 2 && <Users />}
+        {section === 3 && <Notifications />}
+        {section === 4 && <Settings />}
+      </main>
+    </div>
+  );
+};
+
+export default AdminDashboard;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// original backend of the notification
+
+async NotificationsController(req, res) {
+ try {
+        const userId = req.decoded.id;
+
+        // Fetch all notifications where the user is either the sender (userId) or receiver (opponentId)
+        const notifications = await NotificationModel.find({
+            $or: [{ userId }, { opponentId: userId }]
+        })
+        .populate("userId", "username email") // Populate sender details
+        .populate("opponentId", "username email") // Populate opponent details
+        .sort({ createdAt: -1 });
+
+        return res.status(200).json({ success: true, notifications });
+    } catch (error) {
+        console.error("Error fetching notifications:", error);
+        res.status(500).json({ message: "Server error while fetching notifications.", error });
+    }
+}
+
+async NotificationController(req, res) {
+    try {
+        const { message } = req.body;
+        const userId = req.decoded.id;
+
+        if (!message) {
+            return res.status(400).json({ success: false, message: "Message is required." });
+        }
+
+        // Fetch user details to get the username
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // Create a new notification for the admin
+        const notification = new NotificationModel({
+            userId,  
+            email: user.email, 
+            username: user.username, 
+            message,
+          //image, // ccheck if it can be added 
+            type: "user-message",
+            status: "read"
+        });
+
+        await notification.save();
+        return res.status(200).json({ success: true, message: "Message sent to admin successfully." });
+    } catch (error) {
+        console.error("Error sending message:", error);
+        res.status(500).json({ success: false, message: "Server error.", error });
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// original contact us
+
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios"; 
+import style from "./ContactUs.module.css";
+import logo from "../../assets/logo.png";
+
+const ContactUs = () => {
+  const navigate = useNavigate();
+
+  // State variables for form fields
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    mobileNumber: "",
+    message: "",
+  });
+
+  const [errors, setErrors] = useState({});
+  const [showPopup, setShowPopup] = useState(false);
+
+  // Handle input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith("image/")) {
+          setFormData({ ...formData, screenshot: file });
+        } else {
+          setErrors({ ...errors, screenshot: "Only image files are allowed" });
+        }
+      };
+
+  // Validation function
+  const validateForm = () => {
+    let validationErrors = {};
+
+    if (!formData.name.trim()) {
+      validationErrors.name = "Name is required";
+    }
+
+    if (!formData.email.trim()) {
+      validationErrors.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      validationErrors.email = "Invalid email format";
+    }
+
+    if (!formData.mobileNumber.trim()) {
+      validationErrors.mobileNumber = "Mobile number is required";
+    } else if (!/^\d{10}$/.test(formData.mobileNumber)) {
+      validationErrors.mobileNumber = "Mobile number must be 10 digits";
+    }
+
+    if (!formData.message.trim()) {
+      validationErrors.message = "Message is required";
+    }
+
+    setErrors(validationErrors);
+    return Object.keys(validationErrors).length === 0;
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    try {
+      const token = localStorage.getItem("token"); 
+      const response = await axios.post(
+        "http://localhost:5000/api/user/contactUsNotification",
+        {
+          name: formData.name,
+          email: formData.email,
+          mobileNumber: formData.mobileNumber,
+          message: formData.message,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        setShowPopup(true);
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+}; 
+
+  return (
+    <div className={style.contactContainer}>
+      <div className={style.logoContainer}>
+        <img src={logo} alt="Hide & Seek Logo" className={style.logo} />
+      </div>
+      <h1>Contact Us</h1>
+      <form onSubmit={handleSubmit}>
+        <div className={style.inputGroup}>
+          <label>Name *</label>
+          <input type="text" name="name" value={formData.name} onChange={handleChange} />
+          {errors.name && <span className={style.error}>{errors.name}</span>}
+        </div>
+
+        <div className={style.inputGroup}>
+          <label>Email *</label>
+          <input type="email" name="email" value={formData.email} onChange={handleChange} />
+          {errors.email && <span className={style.error}>{errors.email}</span>}
+        </div>
+
+        <div className={style.inputGroup}>
+          <label>Mobile Number *</label>
+          <input type="text" name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} maxLength="10" />
+          {errors.mobileNumber && <span className={style.error}>{errors.mobileNumber}</span>}
+        </div>
+        <div className={style.inputGroup}>
+           <label>Add Screenshot (Optional)</label>
+           <input type="file" accept="image/*" onChange={handleFileChange} />
+           {errors.screenshot && <span className={style.error}>{errors.screenshot}</span>}
+        </div>
+        <div className={style.inputGroup}>
+          <label>Message *</label>
+          <textarea name="message" value={formData.message} onChange={handleChange}></textarea>
+          {errors.message && <span className={style.error}>{errors.message}</span>}
+        </div>
+
+        <button type="submit" className={style.submitButton}>Submit</button>
+      </form>
+
+      {showPopup && (
+        <div className={style.popupOverlay}>
+          <div className={style.popupBox}>
+            <p>Your request has been submitted successfully!</p>
+            <button onClick={() => navigate("/home")}>OK</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ContactUs;
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import style from "./game-in-progress.module.css";
+import { toast } from "react-toastify";
+import { GoogleMap, Circle, useLoadScript } from "@react-google-maps/api";
+
+import axios from "axios";
+
+const mapContainerStyle = {
+  width: "100%",
+  height: "400px",
+  borderRadius: "15px",
+};
+
+const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY"; // Replace with your actual API key
+
+const CountdownPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // State variables
+  const [gameDuration, setGameDuration] = useState(() => parseInt(localStorage.getItem("gameDuration")) || null);
+  const [intervalDuration, setIntervalDuration] = useState(() => parseInt(localStorage.getItem("intervalDuration")) || 0);
+  const [remainingClicks, setRemainingClicks] = useState(0);
+  const [userLocation, setUserLocation] = useState(null);
+
+  // Refs for timers
+  const gameTimerRef = useRef(null);
+  const intervalRef = useRef(null);
+  const isPausedRef = useRef(false);
+
+  // Fetch game settings on mount
+  useEffect(() => {
+    const fetchGameSettings = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/user/duration-and-intervals", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+
+        if (response.data.success) {
+          const { duration, interval } = response.data.settings;
+          setGameDuration((prev) => prev ?? duration * 60);
+          setRemainingClicks(interval);
+        } else {
+          toast.error("Failed to fetch game settings.");
+        }
+      } catch (error) {
+        toast.error("Error fetching game settings.");
+        console.error("Error fetching game settings:", error);
+      }
+    };
+
+    fetchGameSettings();
+  }, []);
+
+  // Save timer values to localStorage
+  useEffect(() => {
+    if (gameDuration !== null) localStorage.setItem("gameDuration", gameDuration);
+    localStorage.setItem("intervalDuration", intervalDuration);
+  }, [gameDuration, intervalDuration]);
+
+  // Update user location
+  useEffect(() => {
+    const updateLocation = async () => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation({ lat: latitude, lng: longitude });
+
+            try {
+              await axios.post("http://localhost:5000/api/user/update-location", {
+                lat: latitude,
+                lng: longitude,
+              }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+              });
+            } catch (error) {
+              console.error("Error updating location:", error);
+            }
+          },
+          (error) => {
+            console.error("Error getting location:", error);
+            toast.error("Failed to get live location.");
+          },
+          { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+        );
+      }
+    };
+
+    updateLocation();
+    const interval = setInterval(updateLocation, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handle game countdown
+  useEffect(() => {
+    if (isPausedRef.current) return;
+
+    if (gameDuration > 0) {
+      gameTimerRef.current = setTimeout(() => setGameDuration((prev) => prev - 1), 1000);
+    } else if (gameDuration === 0) {
+      clearTimeout(gameTimerRef.current);
+      toast.success("Game Over!");
+      setTimeout(() => navigate("/won"), 2000);
+    }
+
+    return () => clearTimeout(gameTimerRef.current);
+  }, [gameDuration, navigate]);
+
+  // Handle interval countdown
+  useEffect(() => {
+    if (isPausedRef.current) return;
+
+    if (intervalDuration > 0) {
+      intervalRef.current = setTimeout(() => setIntervalDuration((prev) => prev - 1), 1000);
+    }
+
+    return () => clearTimeout(intervalRef.current);
+  }, [intervalDuration]);
+
+  // Handle pause when navigating to confirmation
+  useEffect(() => {
+    if (location.pathname === "/confirmation") {
+      isPausedRef.current = true;
+      clearTimeout(gameTimerRef.current);
+      clearTimeout(intervalRef.current);
+    } else {
+      isPausedRef.current = false;
+    }
+  }, [location.pathname]);
+
+  // Handle "END GAME" button
+  const handleEndGame = () => {
+    toast.info("Game Paused");
+    clearTimeout(gameTimerRef.current);
+    clearTimeout(intervalRef.current);
+    navigate("/confirmation");
+  };
+
+  // Handle interval button click
+  const handleIntervalClick = () => {
+    if (remainingClicks > 0 && intervalDuration === 0) {
+      setIntervalDuration(120);
+      setRemainingClicks((prev) => prev - 1);
+      toast.info(`You can start interval ${remainingClicks - 1} more time(s).`);
+    }
+  };
+
+  // Load Google Maps
+  const { isLoaded } = useLoadScript({ googleMapsApiKey: GOOGLE_MAPS_API_KEY });
+  
+
+
+   
+  
+  return (
+    <div className={style.countdownContainer}>
+      <div className={style.header}>
+        <p>Game Duration<br />
+          <span>{gameDuration !== null ? `${Math.floor(gameDuration / 60)}:${(gameDuration % 60).toString().padStart(2, "0")} left` : "Loading..."}</span>
+        </p>
+        <p>Interval Duration {remainingClicks > 0 ? `(${remainingClicks} left)` : "(Disabled)"}<br />
+          <span>{Math.floor(intervalDuration / 60)}:{(intervalDuration % 60).toString().padStart(2, "0")} left</span>
+        </p>
+      </div>
+
+      <>
+      {isLoaded && userLocation ? (
+        <GoogleMap mapContainerStyle={mapContainerStyle} center={userLocation} zoom={15}>
+          <Circle center={userLocation} radius={500} options={{ strokeColor: "#00ff00", fillColor: "#00ff0050" }} />
+        </GoogleMap>
+      ) : (
+        <p>Loading Map...</p>
+      )}
+    </>
+  
+
+      <div className={style.buttonArea}>
+        <button className={style.endGameButton} onClick={handleEndGame}>END GAME</button>
+        <button className={style.endGameButton} onClick={handleIntervalClick} disabled={remainingClicks === 0 || intervalDuration > 0}>
+          Interval {remainingClicks > 0}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default CountdownPage;

@@ -175,4 +175,3 @@ const Users = () => {
 
 export default Users;
 
-// check why when the user is searched its previous inactive and active states are not shown properly but showing the active first and working properly
