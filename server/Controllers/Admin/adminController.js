@@ -224,7 +224,8 @@ class AdminController {
 
 
 
-    
+    // chek why the admin is not able to deactivarte and activate the user correctly intead of tof just showing the message
+    // check the user service and the admin service to see if the user is able to be activated or deactivated correctly  
 // ==================================================== NOTIFICATON ===================================================== //
 
 async getAdminNotifications(req, res, next) {

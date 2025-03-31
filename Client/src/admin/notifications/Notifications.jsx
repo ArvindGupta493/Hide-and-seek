@@ -48,7 +48,8 @@ const Notifications = () => {
               onClick={() => toggleExpand(index)}
             >
               <p className={style.notificationHeader}>
-                <span className={style.userId}>User ID:</span> {note.userId || "N/A"} -{" "}
+                {/* <span className={style.userId}>User ID:</span> {note.userId || "N/A"} -{" "} */}
+                <span className={style.username}>UserName:</span> {note.username || "N/A"} -{" "}
                 <span className={style.shortMessage}>
                   {note.message.length > 30
                     ? note.message.substring(0, 30) + "..."
@@ -58,6 +59,9 @@ const Notifications = () => {
               {expandedIndex === index && (
                 <div className={style.expandedMessage}>
                   <p><strong>User ID:</strong> {note.userId || "N/A"}</p>
+                  <p><strong>Username:</strong> {note.username}</p>
+                  <p><strong>Email:</strong> {note.email}</p>
+                  <p><strong>image:</strong> {note.image || "N/A"}</p>
                   <p><strong>Message:</strong> {note.message}</p>
                   <p><strong>Type:</strong> {note.type || "General"}</p>
                   <p><strong>Status:</strong> {note.status || "Unread"}</p>

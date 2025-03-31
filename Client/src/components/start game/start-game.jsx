@@ -237,26 +237,26 @@ const StartGame = ({ userId }) => {
               <div className={style.searchIcon}>🔍</div>
 
               <select
-  className={style.dropdown}
-  value={opponentUsername?._id || ""}
-  onChange={(e) => {
-    const opponent = players.find((player) => player._id === e.target.value);
-    setSelectedOpponent(opponent);
-  }}
->
-  <option value="" disabled>
-    Select Opponent
-  </option>
-  {players.length > 0 ? (
-    players.map((player) => (
-      <option key={player._id} value={player._id}>
-        {player.username}
-      </option>
-    ))
-  ) : (
-    <option disabled>No players found within range.</option>
-  )}
-</select>
+                className={style.dropdown}
+                value={opponentUsername?._id || ""}
+                onChange={(e) => {
+                  const opponent = players.find((player) => player._id === e.target.value);
+                  setSelectedOpponent(opponent);
+                }}
+              >
+                <option value="" disabled>
+                  Select Opponent
+                </option>
+                {players.length > 0 ? (
+                  players.map((player) => (
+                    <option key={player._id} value={player._id}>
+                      {player.username}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>No players found within range.</option>
+                )}
+              </select>
 
             </div>
             {/* Display error directly under dropdown */}
@@ -359,4 +359,4 @@ StartGame.propTypes = {
 
 export default StartGame;
 
-// need to add the function to be correctly place game duration and interval
+// update the code so the the duration set the user can also be done by a slider  like in this line "              <span className={style.durationValue}>{duration}</span> " only the dureation is shoing tso update the code so that the user can also set the duration by a slider

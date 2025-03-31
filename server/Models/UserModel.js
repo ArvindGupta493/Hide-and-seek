@@ -13,6 +13,7 @@ const UserSchema = new mongoose.Schema({
   address: { type: String, required: false },
   otp: { type: String, select: false }, 
   otpExpires: { type: Date, select: false },
+  isActive: { type: Boolean, default: true }, 
   location: {
     type: { type: String, enum: ['Point'], default: 'Point' },
     coordinates: { type: [Number], default: [0, 0] }, // [longitude, latitude]

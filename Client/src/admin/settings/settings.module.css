@@ -1,74 +1,159 @@
+/* Main Container - Stylish and Centered */
 .container {
-    max-width: 500px;
-    margin: 40px auto;
-    padding: 60px;
-    background-color: white;
-    /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); */
-    border-radius: 15px;
-  }
-  
-  .title {
-    margin-left: 20px;
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 25px;
-    color: #333;
-  }
-  
-  .message {
-    color: green;
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-  
-  .error {
-    color: red;
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-  
-  .adminInfo {
-    margin-bottom: 20px;
-  }
-  
-  .adminInfo p {
-    font-size: 16px;
-    margin: 5px 0;
-    color: #555;
-  }
-  
-  .form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-    transition: border-color 0.3s;
-  }
-  
-  .input:focus {
-    border-color: #007bff;
-    outline: none;
-  }
-  
-  .button {
-    background-color: #0f61e6;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .button:hover {
-    background-color: #0056b3;
-  }
-  
+  max-width: auto;
+  margin:  auto;
+  padding: 20px;
+  /* background: #ffffff; */
+  border-radius: 12px;
+  /* box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.12); */
+  transition: all 0.3s ease-in-out;
+}
+
+/* .container:hover {
+  box-shadow: 0px 12px 40px rgba(0, 0, 0, 0.15);
+} */
+
+/* Title - Sleek heading */
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: left;
+  color: #2c3e50;
+  margin-bottom: 25px;
+  /* border-left: 5px solid #007bff; */
+  padding-left: 12px;
+}
+
+/* Navigation Tabs - Sleek and Interactive */
+.navTabs {
+  display: flex;
+  justify-content: left;
+  gap: 12px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.tab {
+  font-size: 16px;
+  font-weight: 500;
+  color: #555;
+  background: transparent;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  position: relative;
+}
+
+.tab::after {
+  content: "";
+  width: 0%;
+  height: 2px;
+  background: #131313;
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  transition: width 0.3s ease-in-out;
+}
+
+.tab:hover::after,
+.activeTab::after {
+  width: 100%;
+}
+
+.activeTab {
+  font-weight: 600;
+  /* color: #007bff; */
+}
+
+/* Sections - Elegant Card Layout */
+.profileSection,
+.passwordSection {
+  background: #fafafa;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease-in-out;
+}
+
+.profileSection h3,
+.passwordSection h3 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 8px;
+}
+
+/* Admin Info - Well spaced details */
+.adminInfo p {
+  font-size: 16px;
+  color: #555;
+  margin: 12px 0;
+  text-align: left;
+}
+
+/* Messages - Error & Success Styling */
+.message {
+  color: #28a745;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.error {
+  color: #dc3545;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* Form - Enhanced Input Fields */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.input {
+  width: 95%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #f9f9f9;
+  transition: all 0.3s ease-in-out;
+}
+
+.input:focus {
+  border-color: #007bff;
+  background: white;
+  outline: none;
+  box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.2);
+}
+
+/* Submit Button - Elegant and Responsive */
+.button {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.button:hover {
+  background: linear-gradient(135deg, #0056b3, #003e80);
+  transform: scale(1.03);
+  box-shadow: 0px 4px 15px rgba(0, 91, 187, 0.3);
+}

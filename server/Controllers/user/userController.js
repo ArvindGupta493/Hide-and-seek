@@ -17,7 +17,6 @@ const BlacklistedToken = require("../../Models/BlacklistedToken.js");
 
 const { v4: uuidv4 } = require("uuid");
 
- 
 class UserController {
     async  registerController(req, res, next) {
         try {
@@ -311,24 +310,7 @@ async saveGameSettingsController(req, res) {
             return res.status(400).json({ success: false, message: "Opponent not found." });
         }
 
-        // const activeGame = await GameSettings.findOne({
-        //     players: { $in: [userId, opponentId] },
-        //     status: { $ne: "completed" },
-        // });
-
-        // if (activeGame) {
-        //     return res.status(400).json({ message: "One of the users is already in an active game. Finish the current game before starting a new one." });
-        // }
-
-        // Check if the user already has game settings
-        // const existingSettings = await GameSettings.findOne({ userId });
-        // if (existingSettings) {
-        //     return res.status(400).json({
-        //         success: false,
-        //         message: "Game settings already exist for this user. Please update or start a new game."
-        //     });
-        // }
-
+      
         // Generate a unique gameId
         const { v4: uuidv4 } = require("uuid");
         const gameId = uuidv4();
@@ -360,61 +342,10 @@ async saveGameSettingsController(req, res) {
     }
 }
 
-// check why the game is not taking place with same userid which should have happen beacuse when ever user whats to play the new game the same user id can be user but gameid every time will be different so that with user id duplicate key problem will not happen 
-
-// async  saveGameSettingsController(req, res) {
-//     try {
-//         const userId = req.decoded.id;
-//         const { duration, interval, radius, opponentId } = req.body;
-
-//         if (!duration || !interval || !radius || !opponentId) {
-//             return res.status(400).json({ success: false, message: "All fields are required, including opponentId" });
-//         }
-//         if (interval < 1 || interval > 5) {
-//             return res.status(400).json({ success: false, message: "Interval must be between 1 and 5 minutes" });
-//         }
-//         const parsedRadius = parseInt(radius, 10);
-//         if (![1, 2, 3, 4, 5].includes(parsedRadius)) {
-//             return res.status(400).json({ success: false, message: "Radius must be between 1km and 5km" });
-//         }
-     
-//         // Check if opponent exists in the database 
-//         const opponent = await UserModel.findById(opponentId);
-//         if (!opponent) {
-//             return res.status(400).json({ success: false, message: "Opponent not found." });
-//         }
-
-//         // Generate a unique gameId
-//         const gameId = uuidv4();
-
-//         // CREATE A NEW GAME SETTINGS DOCUMENT FOR EACH GAME
-//         const gameSettings = new GameSettings({
-//             gameId,
-//             userId,
-//             duration,
-//             interval,
-//             radius: parsedRadius,
-//             players: [userId, opponentId], 
-//             status: "waiting",
-//             startTime: null,
-//             endTime: null,
-//         });
-
-//         await gameSettings.save();
-//         console.log("Game Settings Saved:", gameSettings); // Debugging
-//         res.status(200).json({ success: true, settings: gameSettings });
-//     } catch (error) {
-//         console.error("Error saving game settings:", error);
-//         res.status(500).json({ success: false, message: error.message });
-//     }
-// }
-
-
-     
 async savedGameSettingsController(req, res) {
     try {
         const userId = req.decoded.id;
-        const gameSettings = await GameSettings.findOne({ userId });
+        const gameSettings = await GameSettings.findOne({ userId }).sort({ createdAt: -1 });
         if (!gameSettings) {
             return res.status(404).json({ success: false, message: "Game settings not found." });
         }
@@ -457,6 +388,29 @@ async choiceController(req, res) {
     }
 };
 
+
+async statusController(req, res) {
+    try {
+        const userId = req.decoded.id;
+
+        // Fetch only the role field
+        const user = await UserModel.findById(userId).select("role");
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        return res.json({
+            success: true,
+            role: user.role
+        });
+
+    } catch (error) {
+        console.error("Error fetching role:", error);
+        return res.status(500).json({ success: false, message: "Server error.", error });
+    }
+}
+
 // ======================== requestAcceptionController: Accept or decline a game request =========================== //
 
 async requestAcceptionController(req, res) {
@@ -481,7 +435,7 @@ async requestAcceptionController(req, res) {
 
             await user.save();
             await opponent.save();
-
+  
             // Update game settings to add the opponent
             let gameSettings = await GameSettings.findOne({ userId });
 
@@ -495,7 +449,7 @@ async requestAcceptionController(req, res) {
             }
 
             // Notify the original requester
-            await sendNotification(opponentId, userId, "game-request", "Your game request has been accepted!");
+            // await sendNotification(opponentId, userId, "game-request", "Your game request has been accepted!");
 
             return res.status(200).json({ success: true, message: "Game request accepted!" });
         } else if (decision === 'decline') {
@@ -507,7 +461,7 @@ async requestAcceptionController(req, res) {
             await opponent.save();
 
             // Notify the original requester
-            await sendNotification(opponentId, userId, "game-request", "Your game request has been declined.");
+            // await sendNotification(opponentId, userId, "game-request", "Your game request has been declined.");
 
             return res.status(200).json({ success: true, message: "Game request declined." });
         } else {
@@ -579,8 +533,8 @@ async startGameNowController(req, res) {
         await opponent.save();
 
         // Send notifications
-        await sendNotification(userId, opponent._id, "game-status", "The game has started!");
-        await sendNotification(opponent._id, userId, "game-status", "The game has started!");
+        // await sendNotification(userId, opponent._id, "game-status", "The game has started!");
+        // await sendNotification(opponent._id, userId, "game-status", "The game has started!");
 
         console.log("Game ID:", gameSettings._id); // Debugging
         console.log("Game settings before save:", gameSettings);
@@ -594,20 +548,62 @@ async startGameNowController(req, res) {
 
 // ================================================== Notifiacation  ====================================================== //
 
-async NotificationController(req, res) {
-    try {
+async NotificationsController(req, res) {
+ try {
         const userId = req.decoded.id;
-        // Fetch all notifications related to this user
-        const notifications = await NotificationModel.find({ receiverId: userId }).sort({ createdAt: -1 });
+
+        // Fetch all notifications where the user is either the sender (userId) or receiver (opponentId)
+        const notifications = await NotificationModel.find({
+            $or: [{ userId }, { opponentId: userId }]
+        })
+        .populate("userId", "username email") // Populate sender details
+        .populate("opponentId", "username email") // Populate opponent details
+        .sort({ createdAt: -1 });
 
         return res.status(200).json({ success: true, notifications });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error while fetching notifications.' });
+        console.error("Error fetching notifications:", error);
+        res.status(500).json({ message: "Server error while fetching notifications.", error });
     }
 }
 
+async NotificationController(req, res) {
+    try {
+        const { message } = req.body;
+        const userId = req.decoded.id;
+
+        if (!message) {
+            return res.status(400).json({ success: false, message: "Message is required." });
+        }
+
+        // Fetch user details to get the username
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // Create a new notification for the admin
+        const notification = new NotificationModel({
+            userId,  
+            email: user.email, 
+            username: user.username, 
+            message,
+            //image, // ccheck if it can be added 
+            type: "user-message",
+            status: "read"
+        });
+
+        await notification.save();
+        return res.status(200).json({ success: true, message: "Message sent to admin successfully." });
+    } catch (error) {
+        console.error("Error sending message:", error);
+        res.status(500).json({ success: false, message: "Server error.", error });
+    }
+}
+
+
 // ==================================================== Location  ====================================================== //
+
 async updateLocationController(req, res) {
     try {
         const { lat, lng } = req.body;
@@ -654,9 +650,6 @@ async getUserLocationController(req, res) {
 //  apply the game lost ,won and total in the game play of the user 
 
 async updateWinLossController(req, res) {
-    const session = await mongoose.startSession(); // Start transaction
-    session.startTransaction();
-
     try {
         const { result } = req.body;
         const userId = req.decoded.id;
@@ -665,7 +658,7 @@ async updateWinLossController(req, res) {
             return res.status(400).json({ success: false, message: "Invalid result. Must be 'win' or 'loss'." });
         }
 
-        const user = await UserModel.findById(userId).session(session);
+        const user = await UserModel.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found." });
         }
@@ -674,7 +667,7 @@ async updateWinLossController(req, res) {
         let game = await GameSettings.findOne({
             players: userId,
             status: "in-progress"
-        }).session(session);
+        });
 
         if (!game) {
             return res.status(404).json({ success: false, message: "No active game found." });
@@ -682,7 +675,7 @@ async updateWinLossController(req, res) {
 
         // Find the opponent
         const opponentId = game.players.find(id => id.toString() !== userId.toString());
-        const opponent = await UserModel.findById(opponentId).session(session);
+        const opponent = await UserModel.findById(opponentId);
 
         if (!opponent) {
             return res.status(404).json({ success: false, message: "Opponent not found." });
@@ -703,18 +696,14 @@ async updateWinLossController(req, res) {
         user.gamesPlayed = (user.gamesPlayed || 0) + 1;
         opponent.gamesPlayed = (opponent.gamesPlayed || 0) + 1;
 
-        // Save user, opponent, and game updates
-        await user.save({ session });
-        await opponent.save({ session });
-        
+        // Save user and opponent updates
+        await user.save();
+        await opponent.save();
+
         // Update game status to 'completed'
         game.status = "completed";  
         game.endTime = new Date();
-        await game.save({ session });
-
-        // Commit transaction
-        await session.commitTransaction();
-        session.endSession();
+        await game.save();
 
         return res.status(200).json({
             success: true,
@@ -735,16 +724,11 @@ async updateWinLossController(req, res) {
         });
 
     } catch (error) {
-        await session.abortTransaction();
-        session.endSession();
         console.error("Error updating game result:", error);
         return res.status(500).json({ success: false, message: "Server error." });
     }
 }
 
-
-
-// update this so that not only the user get the total game palyed ,loss & won but also the opponent will be saved 
 
 async getGameHistoryController(req, res) {
     try {
@@ -839,13 +823,6 @@ async startGame(req, res) {
     }
 }
 
-
-
-
-
-
-
-
  async finishGame  (req, res) {
     try {
         const { gameId } = req.body;
@@ -879,35 +856,34 @@ async startGame(req, res) {
 
 
 async checkGameStatus  (req, res)  {
-        try {
-            const { userId } = req.params;
-    
-            // Find any active or pending game for the user
-            const activeGame = await GameSettings.findOne({
-                players: userId,
-                status: { $in: ["waiting", "in-progress"] }
-            });
-    
-            if (activeGame) {
-                return res.status(400).json({ message: "You already have an active game!" });
-            }
-    
-            return res.status(200).json({ message: "You can start a new game." });
-        } catch (error) {
-            console.error("Error checking game status:", error);
-            res.status(500).json({ message: "Server error" });
+    try {
+        const { userId } = req.params;
+
+        // Convert userId to ObjectId
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: "Invalid user ID format." });
         }
-    };
-    
+        const objectIdUserId = new mongoose.Types.ObjectId(userId);
+
+        // Find any active or pending game for the user
+        const activeGame = await GameSettings.findOne({
+            players: objectIdUserId,  // ✅ Ensure it's an ObjectId
+            status: { $in: ["waiting", "in-progress"] }
+        });
+
+        if (activeGame) {
+            return res.status(400).json({ message: "You already have an active game!" });
+        }
+
+        return res.status(200).json({ message: "You can start a new game." });
+    } catch (error) {
+        console.error("Error checking game status:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+}
   
 }
 
 module.exports = new UserController();
 
-// check why after status is completed and game over the user cannot be used again for playing another game after the user finish playing the first game
-
-// the game is already completed so why can't the user play another game
-
-// check the updateWinLossController so that it can complete the game and user can play another game
-
-// check why the new game cannot be played with same user
+// need to update the notification image upload also so it can be checked by admin 

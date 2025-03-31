@@ -90,6 +90,7 @@ const Dashboard = () => {
         <thead>
           <tr>
             <th>Name</th>
+            <th>UserId</th>
             <th>Email</th>
             <th>Total Games</th>
             <th>Games Won</th>
@@ -111,6 +112,7 @@ const Dashboard = () => {
                 onClick={() => setSelectedUser(user)}
               >
               <td>{user.name}</td>
+              <td>{user._id	}</td>
               <td>{user.email}</td>
               <td>{user.gamesPlayed || 0}</td>
               <td>{user.gamesWon || 0}</td>
@@ -125,14 +127,15 @@ const Dashboard = () => {
       {selectedUser && (
         <div className={styles.popupOverlay} onClick={handleOverlayClick}>
           <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
-            <button
+            {/* <button
               onClick={() => setSelectedUser(null)}
               className={styles.closeButton}
             >
               X
-            </button>
+            </button> */}
             <h3>User Details</h3>
             <p><strong>Name:</strong> {selectedUser.name}</p>
+            <p><strong>UserId:</strong> {selectedUser._id	}</p>
             <p><strong>Email:</strong> {selectedUser.email}</p>
             <p><strong>Total Games:</strong> {selectedUser.gamesPlayed || 0}</p>
             <p><strong>Games Won:</strong> {selectedUser.gamesWon || 0}</p>

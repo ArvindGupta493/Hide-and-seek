@@ -1,7 +1,7 @@
 /* Dashboard Container */
 .dashboardContainer {
   display: flex;
-  height: 95vh;
+  height: 97vh;
 }
 
 /* Navbar */
@@ -9,8 +9,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #1f2937;
-  color: white;
+  background-color: #dce5f7;;
+  color: rgb(0, 0, 0);
   padding: 1rem;
   position: fixed;
   width: 98%;
@@ -20,7 +20,9 @@
 }
 
 .adminPanelText{
-  font-size: 28px;
+  font-size: 25px;
+  font-weight: bold;
+  padding: 10px;
 }
 
 /* Profile Image & Dropdown */
@@ -33,7 +35,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid white;
+  border: 1px solid rgb(0, 0, 0);
 }
 
 .dropdownMenu {
@@ -136,12 +138,10 @@
 } 
 
 
-
-
 /* Sidebar */
 .sidebar {
   width: 260px;
-  background-color: #1f2937;
+  background-color: #dce5f7;;
   color: white;
   padding: 20px;
   height: 100vh;
@@ -167,7 +167,7 @@
 }
 
 .sidebarLink, .logoutButton {
-  color: white;
+  color: rgb(0, 0, 0);
   text-decoration: none;
   display: block;
   padding: 10px;
@@ -186,8 +186,10 @@
 
 /* Logout Button */
 .logoutButton {
-  background-color: #d9534f;
+  background-color: #eb2720;
+  color: rgb(255, 255, 255);
   text-align: center;
+  /* width: 80%; */
   font-weight: bold;
 }
 

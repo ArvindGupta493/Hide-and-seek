@@ -84,7 +84,7 @@ async updatePasswordService(adminId, oldPassword, newPassword) {
 async getUserListService() {
     try {
         // const users = await UserModel.find(); // Adjust the query as needed (e.g., select specific fields)
-        const users = await UserModel.find({}, "name email gamesPlayed gamesWon gamesLost");
+        const users = await UserModel.find({}, "name email gamesPlayed gamesWon gamesLost isActive");
         return users;
     } catch (error) {
         throw new Error("Error fetching users: " + error.message);
@@ -109,16 +109,15 @@ async getUserInfoByEmailService(email) {
     }
 }
 
-
 async activateUserByIdService(userId) {
     try {
-        const updatedUser = await UserModel.findByIdAndUpdate(
-            userId,
-            { isActive: true },
-            { new: true }
-        );
-   
-        return updatedUser;
+        const user = await UserModel.findById(userId);
+        if (!user) throw new Error("User not found");
+
+        user.isActive = true; // ✅ Ensure isActive updates correctly
+        await user.save();
+
+        return user;
     } catch (error) {
         throw new Error("Error activating user: " + error.message);
     }
@@ -126,17 +125,18 @@ async activateUserByIdService(userId) {
 
 async deactivateUserByIdService(userId) {
     try {
-        const updatedUser = await UserModel.findByIdAndUpdate(
-            userId,
-            { isActive: false },
-            { new: true }
-        );
+        const user = await UserModel.findById(userId);
+        if (!user) throw new Error("User not found");
 
-        return updatedUser;
+        user.isActive = false; // ✅ Ensure isActive updates correctly
+        await user.save();
+
+        return user;
     } catch (error) {
         throw new Error("Error deactivating user: " + error.message);
     }
 }
+
 
 async logoutService(adminId) {
     try {
